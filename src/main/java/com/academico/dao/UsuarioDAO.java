@@ -91,6 +91,9 @@ public class UsuarioDAO {
         return u;
     }
 
+
+    // === Actualización ===
+
     public void actualizarPassword(int id, String nuevoHash) throws SQLException {
         String sql = "UPDATE usuario SET password_hash = ? WHERE id = ?";
         try (Connection conn = DatabaseManager.getConnection();
