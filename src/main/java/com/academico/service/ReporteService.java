@@ -35,7 +35,7 @@ public class ReporteService {
         List<CalificacionFinal> reporteGrupo = new ArrayList<>();
         
         List<Inscripcion> inscripciones = inscripcionDAO.findByGrupo(grupoId);
-        List<Unidad> unidades = unidadDAO.findAll(); // Catálogo de unidades
+        List<Unidad> unidades = unidadDAO.findByGrupo(grupoId);
 
         for (Inscripcion inscripcion : inscripciones) {
             

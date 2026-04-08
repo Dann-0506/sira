@@ -33,6 +33,25 @@ public class UnidadDAO {
         }
     }
 
+    public List<Unidad> findByGrupo(int grupoId) throws SQLException {
+        String sql = """
+                SELECT DISTINCT u.*
+                FROM unidad u
+                JOIN actividad_grupo ag ON ag.unidad_id = u.id
+                WHERE ag.grupo_id = ?
+                ORDER BY u.numero
+                """;
+        List<Unidad> lista = new ArrayList<>();
+        try (Connection conn = DatabaseManager.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, grupoId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) lista.add(mapear(rs));
+            }
+        }
+        return lista;
+    }
+
     public List<Unidad> findAll() throws SQLException {
         String sql = "SELECT * FROM unidad ORDER BY numero";
         List<Unidad> lista = new ArrayList<>();

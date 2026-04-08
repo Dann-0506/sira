@@ -35,4 +35,23 @@ public class EstructuraAcademicaService {
 
         return actividadDAO.insertar(actividad);
     }
+
+    public ActividadGrupo actualizarActividad(ActividadGrupo actividad) throws SQLException {
+    BigDecimal sumaActual = actividadDAO.sumaPonderaciones(
+            actividad.getGrupoId(), actividad.getUnidadId());
+    
+    ActividadGrupo actual = actividadDAO.findById(actividad.getId())
+            .orElseThrow(() -> new IllegalArgumentException("Actividad no encontrada"));
+    
+    BigDecimal sumaExcluyendoActual = sumaActual.subtract(actual.getPonderacion());
+    BigDecimal sumaSimulada = sumaExcluyendoActual.add(actividad.getPonderacion());
+    
+    if (sumaSimulada.compareTo(new BigDecimal("100.00")) > 0) {
+        throw new IllegalArgumentException(
+            "La suma de ponderaciones excedería el 100%.");
+    }
+    
+    actividadDAO.actualizar(actividad);
+    return actividad;
+}
 }

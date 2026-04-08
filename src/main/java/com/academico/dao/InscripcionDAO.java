@@ -68,9 +68,9 @@ public class InscripcionDAO {
                        u.nombre AS alumno_nombre
                 FROM inscripcion i
                 JOIN alumno a ON a.id = i.alumno_id
-                JOIN usuario u ON u.id = a.usuario_id
+                LEFTJOIN usuario u ON u.id = a.usuario_id
                 WHERE i.grupo_id = ?
-                ORDER BY u.nombre
+                ORDER BY u.nombre NULLS LAST
                 """;
         List<Inscripcion> lista = new ArrayList<>();
         try (Connection conn = DatabaseManager.getConnection();

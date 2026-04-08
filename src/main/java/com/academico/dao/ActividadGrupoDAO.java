@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ActividadGrupoDAO {
 
@@ -26,6 +27,24 @@ public class ActividadGrupoDAO {
 
 
     // === Consulta ===
+
+    public Optional<ActividadGrupo> findById(int id) throws SQLException {
+        String sql = """
+                SELECT ag.*,
+                    u.numero AS unidad_numero,
+                    u.nombre AS unidad_nombre
+                FROM actividad_grupo ag
+                JOIN unidad u ON u.id = ag.unidad_id
+                WHERE ag.id = ?
+                """;
+        try (Connection conn = DatabaseManager.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? Optional.of(mapear(rs)) : Optional.empty();
+            }
+        }
+    }
 
     public List<ActividadGrupo> findByGrupoYUnidad(int grupoId, int unidadId)
             throws SQLException {
