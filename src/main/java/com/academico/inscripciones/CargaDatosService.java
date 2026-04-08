@@ -1,14 +1,10 @@
-package com.academico.service;
+package com.academico.inscripciones;
 
-import com.academico.dao.AlumnoDAO;
-import com.academico.dao.GrupoDAO;
-import com.academico.dao.InscripcionDAO;
-import com.academico.dao.MateriaDAO;
-import com.academico.model.Alumno;
-import com.academico.model.Grupo;
-import com.academico.model.Inscripcion;
-import com.academico.model.Materia;
-import com.academico.util.CsvUtil;
+import com.academico.academia.Grupo;
+import com.academico.academia.GrupoDAO;
+import com.academico.academia.Materia;
+import com.academico.academia.MateriaDAO;
+import com.academico.core.util.CsvUtil;
 import com.opencsv.exceptions.CsvValidationException;
 
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package com.academico.model;
+package com.academico.inscripciones;
 
 public class Alumno {
     private int id;

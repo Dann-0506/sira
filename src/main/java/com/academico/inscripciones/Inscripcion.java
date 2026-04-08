@@ -1,4 +1,4 @@
-package com.academico.model;
+package com.academico.inscripciones;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
