@@ -97,12 +97,23 @@ CREATE TABLE IF NOT EXISTS bonus (
     otorgado_en    TIMESTAMP    NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS estado_unidad (
+    id SERIAL PRIMARY KEY,
+    grupo_id INT NOT NULL REFERENCES grupo(id) ON DELETE CASCADE,
+    unidad_id INT NOT NULL REFERENCES unidad(id) ON DELETE CASCADE,
+    estado VARCHAR(20) NOT NULL DEFAULT 'ABIERTA' CHECK (estado IN ('ABIERTA', 'CERRADA')),
+    actualizado_en TIMESTAMP NOT NULL DEFAULT NOW(),
+    UNIQUE (grupo_id, unidad_id)
+);
+
 -- Índices
-CREATE INDEX IF NOT EXISTS idx_grupo_materia     ON grupo           (materia_id);
-CREATE INDEX IF NOT EXISTS idx_grupo_maestro     ON grupo           (maestro_id);
-CREATE INDEX IF NOT EXISTS idx_inscripcion_grupo ON inscripcion     (grupo_id);
-CREATE INDEX IF NOT EXISTS idx_inscripcion_alumno ON inscripcion    (alumno_id);
-CREATE INDEX IF NOT EXISTS idx_actividad_grupo   ON actividad_grupo (grupo_id, unidad_id);
-CREATE INDEX IF NOT EXISTS idx_resultado_insc    ON resultado       (inscripcion_id);
-CREATE INDEX IF NOT EXISTS idx_resultado_act     ON resultado       (actividad_grupo_id);
-CREATE INDEX IF NOT EXISTS idx_bonus_insc        ON bonus           (inscripcion_id);
+CREATE INDEX IF NOT EXISTS idx_grupo_materia        ON grupo           (materia_id);
+CREATE INDEX IF NOT EXISTS idx_grupo_maestro        ON grupo           (maestro_id);
+CREATE INDEX IF NOT EXISTS idx_inscripcion_grupo    ON inscripcion     (grupo_id);
+CREATE INDEX IF NOT EXISTS idx_inscripcion_alumno   ON inscripcion     (alumno_id);
+CREATE INDEX IF NOT EXISTS idx_actividad_grupo      ON actividad_grupo (grupo_id, unidad_id);
+CREATE INDEX IF NOT EXISTS idx_resultado_insc       ON resultado       (inscripcion_id);
+CREATE INDEX IF NOT EXISTS idx_resultado_act        ON resultado       (actividad_grupo_id);
+CREATE INDEX IF NOT EXISTS idx_bonus_insc           ON bonus           (inscripcion_id);
+CREATE INDEX IF NOT EXISTS idx_bonus_unidad         ON bonus           (unidad_id);
+CREATE INDEX IF NOT EXISTS idx_estado_unidad        ON estado_unidad   (grupo_id, unidad_id);
