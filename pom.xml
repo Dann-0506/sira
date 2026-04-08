@@ -18,6 +18,14 @@
     </properties>
 
     <dependencies>
+
+        <!-- Variables de entorno -->
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-java</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+        
         <!-- PostgreSQL JDBC -->
         <dependency>
             <groupId>org.postgresql</groupId>

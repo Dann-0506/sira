@@ -2,6 +2,7 @@ package com.academico.db;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import io.github.cdimascio.dotenv.Dotenv;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -13,12 +14,16 @@ public class DatabaseManager {
 
     private static HikariDataSource dataSource;
 
-    public static void initialize(String host, int port,
-                                  String database, String user, String password) {
+    public static void initialize() {
+
+        Dotenv dotenv = Dotenv.load();
+
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:postgresql://" + host + ":" + port + "/" + database);
-        config.setUsername(user);
-        config.setPassword(password);
+
+        config.setJdbcUrl("jdbc:postgresql://" + dotenv.get("DB_HOST") + ":" + dotenv.get("DB_PORT") + "/" + dotenv.get("DB_NAME"));
+        config.setUsername(dotenv.get("DB_USER"));
+        config.setPassword(dotenv.get("DB_PASSWORD"));
+        
         config.setMaximumPoolSize(10);
         config.setMinimumIdle(2);
         config.setConnectionTimeout(30000);
