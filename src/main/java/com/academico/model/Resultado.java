@@ -15,8 +15,7 @@ public class Resultado {
 
     public Resultado() {}
 
-    public Resultado(int id, int inscripcionId, int actividadGrupoId,
-                     BigDecimal calificacion, LocalDateTime modificadoEn) {
+    public Resultado(int id, int inscripcionId, int actividadGrupoId, BigDecimal calificacion, LocalDateTime modificadoEn) {
         this.id = id;
         this.inscripcionId = inscripcionId;
         this.actividadGrupoId = actividadGrupoId;

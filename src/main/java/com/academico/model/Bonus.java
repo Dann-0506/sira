@@ -14,8 +14,7 @@ public class Bonus {
 
     public Bonus() {}
 
-    public Bonus(int id, int inscripcionId, Integer unidadId,
-                 String tipo, BigDecimal puntos, String justificacion) {
+    public Bonus(int id, int inscripcionId, Integer unidadId, String tipo, BigDecimal puntos, String justificacion) {
         this.id = id;
         this.inscripcionId = inscripcionId;
         this.unidadId = unidadId;

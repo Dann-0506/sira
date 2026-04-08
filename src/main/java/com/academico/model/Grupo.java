@@ -12,8 +12,7 @@ public class Grupo {
 
     public Grupo() {}
 
-    public Grupo(int id, int materiaId, int maestroId,
-                 String clave, String semestre, boolean activo) {
+    public Grupo(int id, int materiaId, int maestroId, String clave, String semestre, boolean activo) {
         this.id = id;
         this.materiaId = materiaId;
         this.maestroId = maestroId;
