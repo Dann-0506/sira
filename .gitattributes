@@ -1,0 +1,10 @@
+# Normalizar los saltos de línea automáticamente para todos los archivos de texto
+* text=auto
+
+# Forzar que los scripts de base de datos siempre usen saltos de línea LF (estándar de Linux/Servidores)
+*.sql text eol=lf
+
+# Indicar archivos binarios que Git no debe modificar bajo ninguna circunstancia
+*.jar binary
+*.png binary
+*.jpg binary
