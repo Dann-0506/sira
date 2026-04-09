@@ -1,6 +1,5 @@
 package com.academico.util;
 
-import com.academico.core.MainApp;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -11,21 +10,23 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.academico.MainApp;
+
 public class NavegationUtil {
 
-    public static final String LOGIN          = "/com/academico/auth/ui/login.fxml";
-    public static final String DASHBOARD      = "/com/academico/core/ui/dashboard.fxml";
-    public static final String ALUMNOS        = "/com/academico/inscripciones/ui/alumnos.fxml";
-    public static final String MATERIAS       = "/com/academico/academia/ui/materias.fxml";
-    public static final String MAESTROS       = "/com/academico/academia/ui/maestros.fxml";
-    public static final String GRUPOS         = "/com/academico/academia/ui/grupos.fxml";
-    public static final String INSCRIPCIONES  = "/com/academico/inscripciones/ui/inscripciones.fxml";
-    public static final String CONFIGURACION  = "/com/academico/core/ui/configuracion.fxml";
-    public static final String UTILERIA       = "/com/academico/core/ui/utileria.fxml";
-    public static final String ACTIVIDADES    = "/com/academico/calificaciones/ui/actividades.fxml";
-    public static final String CALIFICACIONES = "/com/academico/calificaciones/ui/calificaciones.fxml";
-    public static final String REPORTES       = "/com/academico/calificaciones/ui/reportes.fxml";
-    public static final String PERFIL         = "/com/academico/core/ui/perfil.fxml";
+    public static final String LOGIN          = "/com/academico/ui/login.fxml";
+    public static final String DASHBOARD      = "/com/academico/ui/dashboard.fxml";
+    public static final String ALUMNOS        = "/com/academico/ui/alumnos.fxml";
+    public static final String MATERIAS       = "/com/academico/ui/materias.fxml";
+    public static final String MAESTROS       = "/com/academico/ui/maestros.fxml";
+    public static final String GRUPOS         = "/com/academico/ui/grupos.fxml";
+    public static final String INSCRIPCIONES  = "/com/academico/ui/inscripciones.fxml";
+    public static final String CONFIGURACION  = "/com/academico/ui/configuracion.fxml";
+    public static final String UTILERIA       = "/com/academico/ui/utileria.fxml";
+    public static final String ACTIVIDADES    = "/com/academico/ui/actividades.fxml";
+    public static final String CALIFICACIONES = "/com/academico/ui/calificaciones.fxml";
+    public static final String REPORTES       = "/com/academico/ui/reportes.fxml";
+    public static final String PERFIL         = "/com/academico/ui/perfil.fxml";
 
     private static final Map<String, String> TITULOS = new HashMap<>();
 

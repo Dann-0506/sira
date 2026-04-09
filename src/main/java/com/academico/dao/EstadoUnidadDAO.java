@@ -1,7 +1,7 @@
 package com.academico.dao;
 
-import com.academico.core.db.DatabaseManager;
 import com.academico.model.EstadoUnidad;
+import com.academico.util.DatabaseManagerUtil;
 
 import java.sql.*;
 
@@ -24,7 +24,7 @@ public class EstadoUnidadDAO {
 
     public EstadoUnidad findByGrupoYUnidad(int grupoId, int unidadId) throws SQLException {
         String sql = "SELECT * FROM estado_unidad WHERE grupo_id = ? AND unidad_id = ?";
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, grupoId);
             ps.setInt(2, unidadId);
@@ -52,7 +52,7 @@ public class EstadoUnidadDAO {
                 ON CONFLICT (grupo_id, unidad_id) 
                 DO UPDATE SET estado = EXCLUDED.estado, actualizado_en = NOW()
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, grupoId);
             ps.setInt(2, unidadId);

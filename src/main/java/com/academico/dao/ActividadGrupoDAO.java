@@ -1,7 +1,7 @@
 package com.academico.dao;
 
-import com.academico.core.db.DatabaseManager;
 import com.academico.model.ActividadGrupo;
+import com.academico.util.DatabaseManagerUtil;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -37,7 +37,7 @@ public class ActividadGrupoDAO {
                 JOIN unidad u ON u.id = ag.unidad_id
                 WHERE ag.id = ?
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -58,7 +58,7 @@ public class ActividadGrupoDAO {
                 ORDER BY ag.id
                 """;
         List<ActividadGrupo> lista = new ArrayList<>();
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, grupoId);
             ps.setInt(2, unidadId);
@@ -80,7 +80,7 @@ public class ActividadGrupoDAO {
                 ORDER BY u.numero, ag.id
                 """;
         List<ActividadGrupo> lista = new ArrayList<>();
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, grupoId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -100,7 +100,7 @@ public class ActividadGrupoDAO {
                 FROM actividad_grupo
                 WHERE grupo_id = ? AND unidad_id = ?
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, grupoId);
             ps.setInt(2, unidadId);
@@ -120,7 +120,7 @@ public class ActividadGrupoDAO {
                 VALUES (?, ?, ?, ?)
                 RETURNING id
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, a.getGrupoId());
             ps.setInt(2, a.getUnidadId());
@@ -143,7 +143,7 @@ public class ActividadGrupoDAO {
                 SET nombre = ?, ponderacion = ?
                 WHERE id = ?
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, a.getNombre());
             ps.setBigDecimal(2, a.getPonderacion());
@@ -157,7 +157,7 @@ public class ActividadGrupoDAO {
 
     public void eliminar(int id) throws SQLException {
         String sql = "DELETE FROM actividad_grupo WHERE id = ?";
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             ps.executeUpdate();

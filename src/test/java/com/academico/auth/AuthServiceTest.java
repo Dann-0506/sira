@@ -5,6 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.academico.service.AuthService;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class AuthServiceTest {

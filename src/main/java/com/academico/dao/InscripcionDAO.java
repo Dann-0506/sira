@@ -1,7 +1,7 @@
 package com.academico.dao;
 
-import com.academico.core.db.DatabaseManager;
 import com.academico.model.Inscripcion;
+import com.academico.util.DatabaseManagerUtil;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -40,7 +40,7 @@ public class InscripcionDAO {
 
     public Optional<Inscripcion> findById(int id) throws SQLException {
         String sql = "SELECT * FROM inscripcion WHERE id = ?";
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -51,7 +51,7 @@ public class InscripcionDAO {
 
     public Optional<Inscripcion> findByAlumnoYGrupo(int alumnoId, int grupoId) throws SQLException {
         String sql = "SELECT * FROM inscripcion WHERE alumno_id = ? AND grupo_id = ?";
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, alumnoId);
             ps.setInt(2, grupoId);
@@ -73,7 +73,7 @@ public class InscripcionDAO {
                 ORDER BY u.nombre NULLS LAST
                 """;
         List<Inscripcion> lista = new ArrayList<>();
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, grupoId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -92,7 +92,7 @@ public class InscripcionDAO {
                 VALUES (?, ?, CURRENT_DATE)
                 RETURNING id, fecha
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, i.getAlumnoId());
             ps.setInt(2, i.getGrupoId());
@@ -114,7 +114,7 @@ public class InscripcionDAO {
                 VALUES (?, ?, CURRENT_DATE)
                 ON CONFLICT (alumno_id, grupo_id) DO NOTHING
                 """;
-        try (Connection conn = DatabaseManager.getConnection()) {
+        try (Connection conn = DatabaseManagerUtil.getConnection()) {
             conn.setAutoCommit(false);
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 for (Inscripcion i : inscripciones) {
@@ -143,7 +143,7 @@ public class InscripcionDAO {
                 SET calificacion_final_override = ?, override_justificacion = ?
                 WHERE id = ?
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             if (override != null) {
@@ -163,7 +163,7 @@ public class InscripcionDAO {
 
     public void eliminar(int id) throws SQLException {
         String sql = "DELETE FROM inscripcion WHERE id = ?";
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             ps.executeUpdate();

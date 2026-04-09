@@ -1,7 +1,7 @@
 package com.academico.dao;
 
-import com.academico.core.db.DatabaseManager;
 import com.academico.model.Usuario;
+import com.academico.util.DatabaseManagerUtil;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ public class UsuarioDAO {
 
     public Optional<Usuario> findById(int id) throws SQLException {
         String sql = "SELECT * FROM usuario WHERE id = ?";
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, id);
@@ -41,7 +41,7 @@ public class UsuarioDAO {
 
     public Optional<Usuario> findByEmail(String email) throws SQLException {
         String sql = "SELECT * FROM usuario WHERE email = ?";
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setString(1, email);
@@ -56,7 +56,7 @@ public class UsuarioDAO {
         String sql = "SELECT * FROM usuario ORDER BY nombre";
         List<Usuario> usuarios = new ArrayList<>();
         
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             
@@ -73,7 +73,7 @@ public class UsuarioDAO {
                 VALUES (?, ?, ?, ?, ?)
                 RETURNING id
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, u.getNombre());
@@ -96,7 +96,7 @@ public class UsuarioDAO {
 
     public void actualizarPassword(int id, String nuevoHash) throws SQLException {
         String sql = "UPDATE usuario SET password_hash = ? WHERE id = ?";
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setString(1, nuevoHash);
@@ -111,7 +111,7 @@ public class UsuarioDAO {
                 SET nombre = ?, email = ?, activo = ?
                 WHERE id = ?
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, u.getNombre());
             ps.setString(2, u.getEmail());
@@ -123,7 +123,7 @@ public class UsuarioDAO {
 
     public void desactivar(int id) throws SQLException {
         String sql = "UPDATE usuario SET activo = FALSE WHERE id = ?";
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, id);

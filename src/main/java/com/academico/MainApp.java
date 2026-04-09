@@ -1,7 +1,7 @@
-package com.academico.core;
+package com.academico;
 
-import com.academico.core.db.DatabaseManager;
-import com.academico.core.util.NavegationUtil;
+import com.academico.util.DatabaseManagerUtil;
+import com.academico.util.NavegationUtil;
 
 import atlantafx.base.theme.PrimerLight;
 import javafx.application.Application;
@@ -31,7 +31,7 @@ public class MainApp extends Application {
     @Override
     public void init() {
         try {
-            DatabaseManager.initialize();
+            DatabaseManagerUtil.initialize();
         } catch (Exception e) {
             System.err.println("Error crítico al inicializar la base de datos: " + e.getMessage());
             javafx.application.Platform.exit();
@@ -40,7 +40,7 @@ public class MainApp extends Application {
 
     @Override
     public void stop() {
-        DatabaseManager.close();
+        DatabaseManagerUtil.close();
     }
 
     public static Stage getPrimaryStage() {

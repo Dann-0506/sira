@@ -3,13 +3,13 @@ package com.academico.dao;
 import java.sql.*;
 import java.util.Optional;
 
-import com.academico.core.db.DatabaseManager;
+import com.academico.util.DatabaseManagerUtil;
 
 public class ConfiguracionDAO {
 
     public Optional<String> findValor(String clave) throws SQLException {
         String sql = "SELECT valor FROM configuracion WHERE clave = ?";
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, clave);
             try (ResultSet rs = ps.executeQuery()) {
@@ -24,7 +24,7 @@ public class ConfiguracionDAO {
                 VALUES (?, ?)
                 ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, clave);
             ps.setString(2, valor);

@@ -1,7 +1,7 @@
 package com.academico.dao;
 
-import com.academico.core.db.DatabaseManager;
 import com.academico.model.Bonus;
+import com.academico.util.DatabaseManagerUtil;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ public class BonusDAO {
                 ORDER BY otorgado_en
                 """;
         List<Bonus> lista = new ArrayList<>();
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, inscripcionId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -48,7 +48,7 @@ public class BonusDAO {
                   AND unidad_id = ?
                   AND tipo = 'unidad'
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, inscripcionId);
             ps.setInt(2, unidadId);
@@ -64,7 +64,7 @@ public class BonusDAO {
                 WHERE inscripcion_id = ?
                   AND tipo = 'materia'
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, inscripcionId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -79,7 +79,7 @@ public class BonusDAO {
                 VALUES (?, ?, ?, ?, ?)
                 RETURNING id, otorgado_en
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, b.getInscripcionId());
             if (b.getUnidadId() != null) ps.setInt(2, b.getUnidadId());
@@ -98,7 +98,7 @@ public class BonusDAO {
 
     public void eliminar(int id) throws SQLException {
         String sql = "DELETE FROM bonus WHERE id = ?";
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             ps.executeUpdate();

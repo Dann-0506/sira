@@ -1,7 +1,7 @@
 package com.academico.dao;
 
-import com.academico.core.db.DatabaseManager;
 import com.academico.model.Grupo;
+import com.academico.util.DatabaseManagerUtil;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class GrupoDAO {
                 JOIN usuario u   ON u.id   = m.usuario_id
                 WHERE g.id = ?
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -60,7 +60,7 @@ public class GrupoDAO {
                 ORDER BY g.semestre DESC, g.clave
                 """;
         List<Grupo> lista = new ArrayList<>();
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) lista.add(mapear(rs));
@@ -81,7 +81,7 @@ public class GrupoDAO {
                 ORDER BY g.semestre DESC, g.clave
                 """;
         List<Grupo> lista = new ArrayList<>();
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, maestroId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -100,7 +100,7 @@ public class GrupoDAO {
                 VALUES (?, ?, ?, ?, ?)
                 RETURNING id
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, g.getMateriaId());
             ps.setInt(2, g.getMaestroId());
@@ -122,7 +122,7 @@ public class GrupoDAO {
                 VALUES (?, ?, ?, ?, ?)
                 ON CONFLICT (clave) DO NOTHING
                 """;
-        try (Connection conn = DatabaseManager.getConnection()) {
+        try (Connection conn = DatabaseManagerUtil.getConnection()) {
             conn.setAutoCommit(false);
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 for (Grupo g : grupos) {
@@ -154,7 +154,7 @@ public class GrupoDAO {
                     semestre = ?, activo = ?
                 WHERE id = ?
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, g.getMateriaId());
             ps.setInt(2, g.getMaestroId());

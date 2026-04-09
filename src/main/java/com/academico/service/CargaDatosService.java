@@ -1,6 +1,5 @@
 package com.academico.service;
 
-import com.academico.core.util.CsvUtil;
 import com.academico.dao.AlumnoDAO;
 import com.academico.dao.GrupoDAO;
 import com.academico.dao.InscripcionDAO;
@@ -9,6 +8,7 @@ import com.academico.model.Alumno;
 import com.academico.model.Grupo;
 import com.academico.model.Inscripcion;
 import com.academico.model.Materia;
+import com.academico.util.CsvUtil;
 import com.opencsv.exceptions.CsvValidationException;
 
 import java.io.IOException;

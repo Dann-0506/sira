@@ -1,7 +1,7 @@
 package com.academico.dao;
 
-import com.academico.core.db.DatabaseManager;
 import com.academico.model.Maestro;
+import com.academico.util.DatabaseManagerUtil;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ public class MaestroDAO {
                 JOIN usuario u ON u.id = m.usuario_id
                 WHERE m.id = ?
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -48,7 +48,7 @@ public class MaestroDAO {
                 JOIN usuario u ON u.id = m.usuario_id
                 WHERE m.usuario_id = ?
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, usuarioId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -65,7 +65,7 @@ public class MaestroDAO {
                 ORDER BY u.nombre
                 """;
         List<Maestro> lista = new ArrayList<>();
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) lista.add(mapear(rs));
@@ -82,7 +82,7 @@ public class MaestroDAO {
                 VALUES (?, ?)
                 RETURNING id
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, m.getUsuarioId());
             if (m.getNumEmpleado() != null) ps.setString(2, m.getNumEmpleado());

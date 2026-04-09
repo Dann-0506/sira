@@ -1,7 +1,7 @@
 package com.academico.dao;
 
-import com.academico.core.db.DatabaseManager;
 import com.academico.model.Materia;
+import com.academico.util.DatabaseManagerUtil;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ public class MateriaDAO {
 
     public Optional<Materia> findById(int id) throws SQLException {
         String sql = "SELECT * FROM materia WHERE id = ?";
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -38,7 +38,7 @@ public class MateriaDAO {
     public List<Materia> findAll() throws SQLException {
         String sql = "SELECT * FROM materia ORDER BY nombre";
         List<Materia> lista = new ArrayList<>();
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) lista.add(mapear(rs));
@@ -55,7 +55,7 @@ public class MateriaDAO {
                 VALUES (?, ?, ?)
                 RETURNING id
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, m.getClave());
             ps.setString(2, m.getNombre());
@@ -75,7 +75,7 @@ public class MateriaDAO {
                 VALUES (?, ?, ?)
                 ON CONFLICT (clave) DO NOTHING
                 """;
-        try (Connection conn = DatabaseManager.getConnection()) {
+        try (Connection conn = DatabaseManagerUtil.getConnection()) {
             conn.setAutoCommit(false);
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 for (Materia m : materias) {
@@ -104,7 +104,7 @@ public class MateriaDAO {
                 SET clave = ?, nombre = ?, total_unidades = ?
                 WHERE id = ?
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, m.getClave());
             ps.setString(2, m.getNombre());

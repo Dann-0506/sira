@@ -1,7 +1,7 @@
 package com.academico.dao;
 
-import com.academico.core.db.DatabaseManager;
 import com.academico.model.Alumno;
+import com.academico.util.DatabaseManagerUtil;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -33,7 +33,7 @@ public class AlumnoDAO {
                 LEFT JOIN usuario u ON u.id = a.usuario_id
                 WHERE a.id = ?
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -49,7 +49,7 @@ public class AlumnoDAO {
                 LEFT JOIN usuario u ON u.id = a.usuario_id
                 WHERE a.matricula = ?
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, matricula);
             try (ResultSet rs = ps.executeQuery()) {
@@ -66,7 +66,7 @@ public class AlumnoDAO {
                 ORDER BY u.nombre
                 """;
         List<Alumno> lista = new ArrayList<>();
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) lista.add(mapear(rs));
@@ -84,7 +84,7 @@ public class AlumnoDAO {
                 ORDER BY u.nombre
                 """;
         List<Alumno> lista = new ArrayList<>();
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, grupoId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -103,7 +103,7 @@ public class AlumnoDAO {
                 VALUES (?, ?)
                 RETURNING id
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             if (a.getUsuarioId() != null) ps.setInt(1, a.getUsuarioId());
             else ps.setNull(1, Types.INTEGER);
@@ -120,7 +120,7 @@ public class AlumnoDAO {
         List<String> duplicados = new ArrayList<>();
         String sql = "INSERT INTO alumno (matricula) VALUES (?) ON CONFLICT (matricula) DO NOTHING";
 
-        try (Connection conn = DatabaseManager.getConnection()) {
+        try (Connection conn = DatabaseManagerUtil.getConnection()) {
             conn.setAutoCommit(false);
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 for (Alumno a : alumnos) {
@@ -144,7 +144,7 @@ public class AlumnoDAO {
 
     public void actualizar(Alumno a) throws SQLException {
         String sql = "UPDATE alumno SET matricula = ? WHERE id = ?";
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, a.getMatricula());
             ps.setInt(2, a.getId());

@@ -9,14 +9,11 @@ module com.academico.core {
     requires bcrypt;
     requires com.opencsv;
 
-    opens com.academico.core to javafx.fxml;
-    opens com.academico.core.ui to javafx.fxml;
-    opens com.academico.core.util to javafx.fxml;
-    opens com.academico.auth to javafx.fxml;
-    opens com.academico.auth.ui to javafx.fxml;
-    opens com.academico.inscripciones to javafx.fxml;
-    opens com.academico.academia.model to javafx.base;
-    opens com.academico.calificaciones.model to javafx.base;
+    opens com.academico.controller to javafx.fxml;
 
-    exports com.academico.core;
+    opens com.academico to javafx.fxml;
+
+    opens com.academico.model to javafx.base;
+
+    exports com.academico;
 }

@@ -1,7 +1,7 @@
 package com.academico.dao;
 
-import com.academico.core.db.DatabaseManager;
 import com.academico.model.Resultado;
+import com.academico.util.DatabaseManagerUtil;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -41,7 +41,7 @@ public class ResultadoDAO {
                 ORDER BY ag.id
                 """;
         List<Resultado> lista = new ArrayList<>();
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, inscripcionId);
             ps.setInt(2, unidadId);
@@ -63,7 +63,7 @@ public class ResultadoDAO {
                 ORDER BY ag.unidad_id, ag.id
                 """;
         List<Resultado> lista = new ArrayList<>();
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, inscripcionId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -86,7 +86,7 @@ public class ResultadoDAO {
                 DO UPDATE SET calificacion  = EXCLUDED.calificacion,
                               modificado_en = NOW()
                 """;
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, inscripcionId);
             ps.setInt(2, actividadGrupoId);
@@ -105,7 +105,7 @@ public class ResultadoDAO {
                 DO UPDATE SET calificacion  = EXCLUDED.calificacion,
                               modificado_en = NOW()
                 """;
-        try (Connection conn = DatabaseManager.getConnection()) {
+        try (Connection conn = DatabaseManagerUtil.getConnection()) {
             conn.setAutoCommit(false);
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 for (Resultado r : resultados) {

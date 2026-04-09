@@ -1,7 +1,7 @@
 package com.academico.dao;
 
-import com.academico.core.db.DatabaseManager;
 import com.academico.model.Unidad;
+import com.academico.util.DatabaseManagerUtil;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ public class UnidadDAO {
 
     public Optional<Unidad> findById(int id) throws SQLException {
         String sql = "SELECT * FROM unidad WHERE id = ?";
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -42,7 +42,7 @@ public class UnidadDAO {
                 ORDER BY u.numero
                 """;
         List<Unidad> lista = new ArrayList<>();
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, grupoId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -55,7 +55,7 @@ public class UnidadDAO {
     public List<Unidad> findAll() throws SQLException {
         String sql = "SELECT * FROM unidad ORDER BY numero";
         List<Unidad> lista = new ArrayList<>();
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) lista.add(mapear(rs));
@@ -67,7 +67,7 @@ public class UnidadDAO {
 
     public Unidad insertar(Unidad u) throws SQLException {
         String sql = "INSERT INTO unidad (numero, nombre) VALUES (?, ?) RETURNING id";
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, u.getNumero());
             ps.setString(2, u.getNombre());
@@ -84,7 +84,7 @@ public class UnidadDAO {
 
     public void actualizar(Unidad u) throws SQLException {
         String sql = "UPDATE unidad SET numero = ?, nombre = ? WHERE id = ?";
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, u.getNumero());
             ps.setString(2, u.getNombre());
@@ -97,7 +97,7 @@ public class UnidadDAO {
 
     public void eliminar(int id) throws SQLException {
         String sql = "DELETE FROM unidad WHERE id = ?";
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             ps.executeUpdate();
