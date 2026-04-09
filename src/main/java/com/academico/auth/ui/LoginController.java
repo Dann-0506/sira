@@ -62,7 +62,7 @@ public class LoginController {
 
         } catch (Exception e) {
             mostrarError(errorGeneral,
-                "Error de conexión. Verifica que la base de datos esté disponible.");
+                "Error de conexión.");
             System.err.println("Error en login: " + e.getMessage());
         } finally {
             botonLogin.setDisable(false);

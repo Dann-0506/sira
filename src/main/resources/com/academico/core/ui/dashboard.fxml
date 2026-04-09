@@ -19,13 +19,13 @@
             <!-- Perfil del usuario -->
             <VBox spacing="4" style="-fx-padding: 8 0 16 0;">
                 <Label fx:id="labelNombreUsuario"
-                       text="Cargando..."
-                       style="-fx-font-size: 14px; -fx-font-weight: bold;
-                              -fx-wrap-text: true;"/>
+                    text="Cargando..."
+                    style="-fx-font-size: 15px; -fx-font-weight: bold;
+                            -fx-wrap-text: true;"/>
                 <Label fx:id="labelRolUsuario"
-                       text=""
-                       styleClass="subtitulo-seccion"
-                       style="-fx-font-size: 12px;"/>
+                    text=""
+                    styleClass="subtitulo-seccion"
+                    style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
             </VBox>
 
             <Separator style="-fx-padding: 0 0 12 0;"/>
