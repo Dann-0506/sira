@@ -1,5 +1,6 @@
-package com.academico.academia;
+package com.academico.academia.dao;
 
+import com.academico.academia.model.Materia;
 import com.academico.core.db.DatabaseManager;
 
 import java.sql.*;

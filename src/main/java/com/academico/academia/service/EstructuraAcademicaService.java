@@ -1,4 +1,4 @@
-package com.academico.academia;
+package com.academico.academia.service;
 
 import com.academico.calificaciones.ActividadGrupo;
 import com.academico.calificaciones.ActividadGrupoDAO;

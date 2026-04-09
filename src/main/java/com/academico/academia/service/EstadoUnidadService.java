@@ -1,6 +1,9 @@
-package com.academico.academia;
+package com.academico.academia.service;
 
 import java.sql.SQLException;
+
+import com.academico.academia.dao.EstadoUnidadDAO;
+import com.academico.academia.model.EstadoUnidad;
 
 
 public class EstadoUnidadService {
