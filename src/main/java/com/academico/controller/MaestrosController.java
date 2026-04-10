@@ -12,6 +12,9 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.List;
@@ -142,8 +145,11 @@ public class MaestrosController {
         try {
             maestroService.guardar(m, maestroEnEdicion != null);
             mostrarNotificacion("Docente guardado con éxito", false);
-            handleCancelar();
             cargarDatos();
+
+            PauseTransition pause = new PauseTransition(Duration.seconds(1));
+            pause.setOnFinished(e -> handleCancelar());
+            pause.play();
         } catch (Exception e) {
             mostrarNotificacion(e.getMessage(), true);
         }
@@ -258,7 +264,10 @@ public class MaestrosController {
             try {
                 maestroService.restablecerPassword(maestroEnEdicion.getId());
                 mostrarNotificacion("Contraseña restablecida a '123456'.", false);
-                handleCancelar();
+                
+                PauseTransition pause = new PauseTransition(Duration.seconds(1));
+                pause.setOnFinished(e -> handleCancelar());
+                pause.play();
             } catch (Exception e) {
                 mostrarNotificacion(e.getMessage(), true);
             }

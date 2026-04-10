@@ -14,6 +14,8 @@ import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -149,8 +151,11 @@ public class AlumnosController {
             
             // 3. Notificar éxito
             mostrarNotificacion("Operación realizada con éxito", false);
-            handleCancelar();
             cargarDatos();
+
+            PauseTransition pause = new PauseTransition(Duration.seconds(1));
+            pause.setOnFinished(e -> handleCancelar());
+            pause.play();
         } catch (Exception e) {
             // 4. Notificar error traducido
             mostrarNotificacion(e.getMessage(), true);
@@ -337,7 +342,10 @@ public class AlumnosController {
             try {
                 alumnoService.restablecerPassword(alumnoEnEdicion.getId());
                 mostrarNotificacion("Contraseña restablecida a '123456'.", false);
-                handleCancelar();
+                
+                PauseTransition pause = new PauseTransition(Duration.seconds(1));
+                pause.setOnFinished(e -> handleCancelar());
+                pause.play();
             } catch (Exception e) {
                 mostrarNotificacion(e.getMessage(), true);
             }

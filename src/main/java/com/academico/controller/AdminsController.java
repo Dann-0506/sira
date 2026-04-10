@@ -11,6 +11,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -190,8 +193,11 @@ public class AdminsController {
         try {
             adminService.guardar(u, adminEnEdicion != null);
             mostrarNotificacion("Administrador guardado con éxito", false);
-            handleCancelar();
             cargarDatos();
+
+            PauseTransition pause = new PauseTransition(Duration.seconds(1));
+            pause.setOnFinished(e -> handleCancelar());
+            pause.play();
         } catch (Exception e) {
             mostrarNotificacion(e.getMessage(), true);
         }
@@ -237,7 +243,10 @@ public class AdminsController {
             try {
                 adminService.restablecerPassword(adminEnEdicion.getId());
                 mostrarNotificacion("Contraseña restablecida a '123456'.", false);
-                handleCancelar(); // Cerramos el panel por comodidad
+
+                PauseTransition pause = new PauseTransition(Duration.seconds(1));
+                pause.setOnFinished(e -> handleCancelar());
+                pause.play();
             } catch (Exception e) {
                 mostrarNotificacion(e.getMessage(), true);
             }
