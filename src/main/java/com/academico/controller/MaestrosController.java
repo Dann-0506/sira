@@ -29,7 +29,7 @@ public class MaestrosController {
     @FXML private TextField campoNumEmpleado;
     @FXML private TextField campoNombre;
     @FXML private TextField campoEmail;
-    @FXML private VBox panelFormulario;
+    @FXML private StackPane panelFormulario;
     @FXML private Label labelTituloFormulario;
     @FXML private Label mensajeGeneral;
     @FXML private Label errorEmail;
@@ -63,6 +63,7 @@ public class MaestrosController {
             private final HBox panel = new HBox(8, btnEditar, btnEstado, btnEliminar); 
             {
                 btnEditar.getStyleClass().addAll("accent", "flat");
+                btnEstado.getStyleClass().addAll("flat");
                 btnEliminar.getStyleClass().addAll("danger", "flat");
                 panel.setStyle("-fx-alignment: center;");
 
@@ -78,13 +79,17 @@ public class MaestrosController {
                     setGraphic(null);
                 } else {
                     Maestro m = getTableView().getItems().get(getIndex());
+                    
+                    btnEstado.getStyleClass().removeAll("success", "warning");
+
                     if (m.isActivo()) {
                         btnEstado.setText("Desactivar");
-                        btnEstado.setStyle("-fx-text-fill: #856404; -fx-background-color: #fff3cd;");
+                        btnEstado.getStyleClass().add("warning");
                     } else {
                         btnEstado.setText("Activar");
-                        btnEstado.setStyle("-fx-text-fill: #155724; -fx-background-color: #d4edda;");
+                        btnEstado.getStyleClass().add("success");
                     }
+                    
                     setGraphic(panel);
                 }
             }
