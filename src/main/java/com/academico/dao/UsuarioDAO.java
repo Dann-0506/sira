@@ -130,4 +130,31 @@ public class UsuarioDAO {
             ps.executeUpdate();
         }
     }
+
+    public void actualizarPerfil(int id, String nombre, String email, String passwordHash) throws SQLException {
+        String sql;
+        // Si escribió una nueva contraseña, la incluimos en el UPDATE
+        if (passwordHash != null && !passwordHash.isEmpty()) {
+            sql = "UPDATE usuario SET nombre = ?, email = ?, password_hash = ? WHERE id = ?";
+        } else {
+            // Si la dejó en blanco, solo actualizamos nombre y correo
+            sql = "UPDATE usuario SET nombre = ?, email = ? WHERE id = ?";
+        }
+        
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+             
+            ps.setString(1, nombre);
+            ps.setString(2, email);
+            
+            if (passwordHash != null && !passwordHash.isEmpty()) {
+                ps.setString(3, passwordHash);
+                ps.setInt(4, id);
+            } else {
+                ps.setInt(3, id);
+            }
+            
+            ps.executeUpdate();
+        }
+    }
 }

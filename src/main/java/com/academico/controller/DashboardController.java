@@ -3,6 +3,12 @@ package com.academico.controller;
 import com.academico.model.Usuario;
 import com.academico.util.SessionManagerUtil;
 import com.academico.util.NavegationUtil;
+import com.academico.service.individuals.UsuarioService;
+
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -12,14 +18,21 @@ import javafx.scene.layout.VBox;
 
 public class DashboardController {
 
-    @FXML private Label    labelNombreUsuario;
-    @FXML private Label    labelRolUsuario;
-    @FXML private Label    labelBienvenida;
-    @FXML private VBox     menuNavegacion;
-    @FXML private StackPane areaPrincipal;
+    @FXML private Label         labelNombreUsuario;
+    @FXML private Label         labelRolUsuario;
+    @FXML private Label         labelBienvenida;
+    @FXML private VBox          menuNavegacion;
+    @FXML private StackPane     areaPrincipal;
+    @FXML private StackPane     panelPerfilFlotante;
+    @FXML private TextField     campoPerfilNombre;
+    @FXML private TextField     campoPerfilEmail;
+    @FXML private PasswordField campoPerfilPassword;
+    @FXML private Label         mensajePerfil;
 
     // Rastrea el botón activo para resaltarlo
     private Button botonActivo;
+
+    private final UsuarioService usuarioService = new UsuarioService();
 
     @FXML
     public void initialize() {
@@ -58,10 +71,15 @@ public class DashboardController {
             agregarBoton("Actividades",    NavegationUtil.ACTIVIDADES);
             agregarBoton("Calificaciones", NavegationUtil.CALIFICACIONES);
             agregarBoton("Reportes",       NavegationUtil.REPORTES);
+        }
 
-            agregarSeccion("CUENTA");
-            agregarBoton("Mi perfil",      NavegationUtil.PERFIL);
-}
+        agregarSeccion("CUENTA");
+        Button btnPerfil = new Button("Mi perfil");
+        btnPerfil.getStyleClass().add("flat");
+        btnPerfil.setMaxWidth(Double.MAX_VALUE);
+        btnPerfil.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        btnPerfil.setOnAction(e -> abrirPerfilFlotante()); 
+        menuNavegacion.getChildren().add(btnPerfil);
     }
 
     private void agregarSeccion(String titulo) {
@@ -118,5 +136,72 @@ public class DashboardController {
             case "alumno"  -> "Estudiante";
             default        -> rol;
         };
+    }
+
+    // === LÓGICA DE MI PERFIL ===
+
+    private void abrirPerfilFlotante() {
+        Usuario actual = SessionManagerUtil.getUsuarioActual();
+        campoPerfilNombre.setText(actual.getNombre());
+        campoPerfilEmail.setText(actual.getEmail());
+        campoPerfilPassword.clear();
+        
+        panelPerfilFlotante.setVisible(true);
+        panelPerfilFlotante.setManaged(true);
+    }
+
+    @FXML
+    private void handleCerrarPerfil() {
+        panelPerfilFlotante.setVisible(false);
+        panelPerfilFlotante.setManaged(false);
+    }
+
+    @FXML
+    private void handleGuardarPerfil() {
+        Usuario actual = SessionManagerUtil.getUsuarioActual();
+        String nuevoNombre = campoPerfilNombre.getText().trim();
+        String nuevoEmail = campoPerfilEmail.getText().trim();
+        String nuevaPass = campoPerfilPassword.getText();
+
+        try {
+            usuarioService.actualizarPerfil(actual.getId(), nuevoNombre, nuevoEmail, nuevaPass);
+            
+            actual.setNombre(nuevoNombre);
+            actual.setEmail(nuevoEmail);
+            
+            labelNombreUsuario.setText(nuevoNombre);
+            labelBienvenida.setText("Bienvenido, " + nuevoNombre.split(" ")[0] + ".");
+            
+            mostrarNotificacionPerfil("Perfil actualizado con éxito.", false);
+            
+            PauseTransition pause = new PauseTransition(Duration.seconds(1));
+            pause.setOnFinished(e -> handleCerrarPerfil());
+            pause.play();
+
+        } catch (Exception e) {
+            mostrarNotificacionPerfil(e.getMessage(), true);
+        }
+    }
+
+    private void mostrarNotificacionPerfil(String mensaje, boolean esError) {
+        mensajePerfil.setText(mensaje);
+        mensajePerfil.setOpacity(1.0);
+        mensajePerfil.setVisible(true);
+        mensajePerfil.setManaged(true);
+
+        if (esError) {
+            mensajePerfil.setStyle("-fx-background-color: #f8d7da; -fx-text-fill: #721c24; -fx-padding: 8; -fx-background-radius: 5;");
+        } else {
+            mensajePerfil.setStyle("-fx-background-color: #d4edda; -fx-text-fill: #155724; -fx-padding: 8; -fx-background-radius: 5;");
+        }
+
+        javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(Duration.seconds(1), mensajePerfil);
+        fade.setDelay(Duration.seconds(2));
+        fade.setToValue(0.0);
+        fade.setOnFinished(e -> {
+            mensajePerfil.setVisible(false);
+            mensajePerfil.setManaged(false);
+        });
+        fade.play();
     }
 }

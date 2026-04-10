@@ -85,7 +85,9 @@ public class AdminsController {
 
                     panel.getChildren().clear();
                     if (usuarioLogueado != null && u.getId() == usuarioLogueado.getId()) {
-                        panel.getChildren().add(btnEditar);
+                        Label lblTu = new Label("Eres tú. Edita desde 'Mi Perfil'.");
+                        lblTu.setStyle("-fx-text-fill: #6c757d; -fx-font-style: italic; -fx-font-size: 11px;");
+                        panel.getChildren().add(lblTu);
                     } else {
                         panel.getChildren().addAll(btnEditar, btnEstado, btnEliminar);
                     }

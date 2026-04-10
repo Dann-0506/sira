@@ -4,62 +4,69 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx/21"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.academico.controller.DashboardController">
+<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.academico.controller.DashboardController">
 
-    <!-- Sidebar -->
-    <left>
-        <VBox spacing="0"
-              prefWidth="220" minWidth="220"
-              style="-fx-background-color: -color-bg-subtle;
-                     -fx-border-color: -color-border-default;
-                     -fx-border-width: 0 1 0 0;">
-            <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+    <BorderPane>
+        <left>
+            <VBox spacing="0" prefWidth="220" minWidth="220" style="-fx-background-color: -color-bg-subtle; -fx-border-color: -color-border-default; -fx-border-width: 0 1 0 0;">
+                <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
 
-            <!-- Perfil -->
-            <VBox spacing="2">
-                <padding><Insets bottom="12"/></padding>
-                <Label fx:id="labelNombreUsuario"
-                       text="Cargando..."
-                       styleClass="text-bold"
-                       style="-fx-font-size: 14px;"/>
-                <Label fx:id="labelRolUsuario"
-                       styleClass="text-muted"
-                       style="-fx-font-size: 12px;"/>
+                <VBox spacing="2">
+                    <padding><Insets bottom="12"/></padding>
+                    <Label fx:id="labelNombreUsuario" text="Cargando..." styleClass="text-bold" style="-fx-font-size: 14px;"/>
+                    <Label fx:id="labelRolUsuario" styleClass="text-muted" style="-fx-font-size: 12px;"/>
+                </VBox>
+
+                <Separator/>
+                <Region prefHeight="8"/>
+
+                <VBox fx:id="menuNavegacion" spacing="2" VBox.vgrow="ALWAYS"/>
+
+                <Region VBox.vgrow="ALWAYS"/>
+                <Separator/>
+                <Region prefHeight="8"/>
+
+                <Button text="Cerrar sesión" maxWidth="Infinity" styleClass="flat, danger" onAction="#handleCerrarSesion"/>
+            </VBox>
+        </left>
+
+        <center>
+            <StackPane fx:id="areaPrincipal" style="-fx-background-color: -color-bg-default; -fx-padding: 32;">
+                <VBox alignment="CENTER" spacing="8">
+                    <Label fx:id="labelBienvenida" styleClass="title-3"/>
+                    <Label text="Selecciona una opción del menú para comenzar." styleClass="text-muted"/>
+                </VBox>
+            </StackPane>
+        </center>
+    </BorderPane>
+
+    <StackPane fx:id="panelPerfilFlotante" visible="false" managed="false" style="-fx-background-color: rgba(0,0,0,0.4);">
+        <VBox maxWidth="400" maxHeight="-Infinity" spacing="20" style="-fx-background-color: white; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 15, 0, 0, 5); -fx-padding: 30;">
+            
+            <Label text="Mi Perfil" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+            
+            <VBox spacing="5">
+                <Label text="Nombre Completo" style="-fx-font-weight: bold;"/>
+                <TextField fx:id="campoPerfilNombre" style="-fx-pref-height: 35;"/>
             </VBox>
 
-            <Separator/>
-            <Region prefHeight="8"/>
+            <VBox spacing="5">
+                <Label text="Correo Electrónico" style="-fx-font-weight: bold;"/>
+                <TextField fx:id="campoPerfilEmail" style="-fx-pref-height: 35;"/>
+            </VBox>
 
-            <!-- Menú dinámico -->
-            <VBox fx:id="menuNavegacion" spacing="2" VBox.vgrow="ALWAYS"/>
+            <VBox spacing="5">
+                <Label text="Cambiar Contraseña" style="-fx-font-weight: bold;"/>
+                <PasswordField fx:id="campoPerfilPassword" promptText="Dejar en blanco para mantener la actual" style="-fx-pref-height: 35;"/>
+            </VBox>
 
-            <Region VBox.vgrow="ALWAYS"/>
+            <Label fx:id="mensajePerfil" visible="false" managed="false" wrapText="true"/>
 
-            <Separator/>
-            <Region prefHeight="8"/>
-
-            <!-- Cerrar sesión -->
-            <Button text="Cerrar sesión"
-                    maxWidth="Infinity"
-                    styleClass="flat, danger"
-                    onAction="#handleCerrarSesion"/>
+            <HBox spacing="10" alignment="CENTER_RIGHT">
+                <Button text="Cancelar" onAction="#handleCerrarPerfil" styleClass="flat" style="-fx-pref-height: 35;"/>
+                <Button text="Guardar Cambios" onAction="#handleGuardarPerfil" styleClass="accent" style="-fx-pref-height: 35;"/>
+            </HBox>
         </VBox>
-    </left>
+    </StackPane>
 
-    <!-- Contenido principal -->
-    <center>
-        <StackPane fx:id="areaPrincipal"
-                   style="-fx-background-color: -color-bg-default;
-                          -fx-padding: 32;">
-            <VBox alignment="CENTER" spacing="8">
-                <Label fx:id="labelBienvenida"
-                       styleClass="title-3"/>
-                <Label text="Selecciona una opción del menú para comenzar."
-                       styleClass="text-muted"/>
-            </VBox>
-        </StackPane>
-    </center>
-
-</BorderPane>
+</StackPane>
