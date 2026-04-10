@@ -15,29 +15,36 @@ import java.util.Optional;
 
 public class LoginController {
 
-    @FXML private TextField     campEmail;
+    // === ELEMENTOS PRINCIPALES ===
+    @FXML private TextField campEmail;
     @FXML private PasswordField campPassword;
-    @FXML private Label         errorEmail;
-    @FXML private Label         errorPassword;
-    @FXML private Label         errorGeneral;
-    @FXML private Button        botonLogin;
+    @FXML private Button botonLogin;
+
+    // === ETIQUETAS DE ERROR ===
+    @FXML private Label errorEmail;
+    @FXML private Label errorPassword;
+    @FXML private Label errorGeneral;
+
+    // === VARIABLES DE ESTADO Y SERVICIOS ===
+    private final AuthService authService = new AuthService();
+
+    // ==========================================
+    // LÓGICA DE AUTENTICACIÓN
+    // ==========================================
 
     @FXML
     private void handleLogin() {
-        // Limpia errores previos
         limpiarErrores();
 
-        String email    = campEmail.getText().trim();
+        String email = campEmail.getText().trim();
         String password = campPassword.getText();
-
-        // Validación local antes de tocar la BD
         boolean hayError = false;
 
+        // Validación visual preliminar
         if (email.isEmpty()) {
             mostrarError(errorEmail, "El correo es obligatorio.");
             hayError = true;
         }
-
         if (password.isEmpty()) {
             mostrarError(errorPassword, "La contraseña es obligatoria.");
             hayError = true;
@@ -45,26 +52,25 @@ public class LoginController {
 
         if (hayError) return;
 
-        // Deshabilita el botón durante el proceso
+        // Bloqueo de UI durante la consulta
         botonLogin.setDisable(true);
 
         try {
-            AuthService authService = new AuthService();
             Optional<Usuario> resultado = authService.login(email, password);
 
             if (resultado.isPresent()) {
                 Usuario usuario = resultado.get();
 
+                // Detección de contraseña insegura obligatoria
                 if ("123456".equals(campPassword.getText())) {
                     usuario.setRequiereCambioPassword(true);
                 }
                 
                 SessionManagerUtil.iniciarSesion(usuario);
 
+                // Preparación de la ventana principal
                 javafx.stage.Stage stage = (javafx.stage.Stage) botonLogin.getScene().getWindow();
                 stage.setResizable(true);
-
-                
 
                 javafx.application.Platform.runLater(() -> {
                     stage.setMaximized(true);
@@ -72,14 +78,13 @@ public class LoginController {
                     stage.setMinHeight(720);
                     navegarSegunRol(usuario.getRol());
                 });
+
             } else {
-                mostrarError(errorGeneral,
-                    "Correo o contraseña incorrectos.");
+                mostrarError(errorGeneral, "Correo o contraseña incorrectos.");
             }
 
         } catch (Exception e) {
-            mostrarError(errorGeneral,
-                "Error de conexión.");
+            mostrarError(errorGeneral, "Error de conexión.");
             System.err.println("Error en login: " + e.getMessage());
         } finally {
             botonLogin.setDisable(false);
@@ -93,6 +98,10 @@ public class LoginController {
         }
     }
 
+    // ==========================================
+    // GESTIÓN DE COMPONENTES UI
+    // ==========================================
+
     private void mostrarError(Label label, String mensaje) {
         label.setText(mensaje);
         label.setVisible(true);
@@ -100,7 +109,9 @@ public class LoginController {
     }
 
     private void limpiarErrores() {
-        for (Label label : new Label[]{errorEmail, errorPassword, errorGeneral}) {
+        Label[] labelsDeError = {errorEmail, errorPassword, errorGeneral};
+        
+        for (Label label : labelsDeError) {
             label.setVisible(false);
             label.setManaged(false);
             label.setText("");
