@@ -1,46 +1,78 @@
-# Sistema de Registro Académico
+# Sistema de Registro de Resultados Académicos
 
-> **Aviso de Proyecto Académico y Estado Actual**
-> Este repositorio contiene un proyecto desarrollado con fines puramente académicos y de aprendizaje universitario. No está diseñado para su uso en entornos reales. 
-> 
-> **Estado del proyecto:** Actualmente se encuentra en fase de desarrollo (WIP). La lógica de negocio (Backend) y la base de datos están estructuradas, pero las vistas (UI) y los controladores de la aplicación aún no están implementados. Por lo tanto, el proyecto **aún no se puede ejecutar como una aplicación independiente**, pero sus módulos pueden ser validados mediante la suite de pruebas.
+> **Aviso de Proyecto Académico**
+> Este repositorio contiene un proyecto desarrollado con fines puramente académicos y de aprendizaje universitario. No está diseñado para su uso en entornos de producción reales.
+>
+> **Estado del proyecto:** En desarrollo activo (WIP). El backend (modelos, DAOs, servicios y base de datos) está completo y validado mediante suite de pruebas. La interfaz gráfica (JavaFX) se encuentra en construcción.
 
-Sistema de gestión para administrar materias, grupos, alumnos, maestros y calificaciones.
+Sistema de escritorio para gestionar el ciclo completo de evaluación académica: alumnos, maestros, materias, grupos, actividades, calificaciones y reportes.
+
+---
 
 ## Arquitectura
 
-El proyecto utiliza una **Arquitectura Basada en Funcionalidades (Feature-based)**. En lugar de organizar el código por tipo de archivo (Modelos, Vistas, Controladores), se organiza por el dominio del negocio. Esto facilita la mantenibilidad y el crecimiento del sistema.
+El proyecto sigue una **arquitectura en capas clásica (MVC + DAO)**, organizando el código por tipo de responsabilidad:
 
-### Estructura de Paquetes
-* `core/`: Configuración global, utilidades (`CsvUtil`, `BackupUtil`) y conexión a base de datos.
-* `auth/`: Gestión de usuarios, roles, contraseñas y autenticación.
-* `academia/`: Estructura del curso (Materias, Grupos, Unidades y Maestros).
-* `inscripciones/`: Gestión de alumnos y su asignación a los grupos (incluye importación masiva).
-* `calificaciones/`: El corazón del sistema para registrar notas, aplicar bonus, calcular promedios y generar reportes finales.
+```
+src/main/java/com/academico/
+├── controller/     ← Controladores JavaFX (lógica de UI)
+├── dao/            ← Acceso a datos (SQL con JDBC)
+├── db/             ← Configuración del pool de conexiones
+├── model/          ← POJOs — representación de entidades
+├── service/        ← Lógica de negocio y cálculos
+└── util/           ← Utilidades transversales
+```
+
+### Capas
+
+**Model** — POJOs puros sin dependencias externas. Representan las entidades del dominio: `Alumno`, `Grupo`, `Resultado`, `CalificacionFinal`, etc.
+
+**DAO** — Toda la SQL vive aquí. Cada DAO gestiona las operaciones CRUD de una tabla o conjunto relacionado. Usan HikariCP para obtener conexiones del pool.
+
+**Service** — Lógica de negocio que no pertenece a ninguna tabla específica: cálculo de promedios ponderados, validación de ponderaciones, aplicación de bonus, generación de reportes.
+
+**Controller** — Controladores JavaFX que conectan la UI con los servicios. No contienen SQL ni lógica de negocio.
+
+**Util** — Herramientas transversales: `SessionManager` (sesión activa), `NavegacionUtil` (navegación entre vistas), `CsvUtil` (lectura/escritura CSV), `BackupUtil` (respaldo y restauración de BD).
+
+---
 
 ## Tecnologías
 
-* **Lenguaje:** Java 21
-* **Gestor de dependencias:** Maven
-* **Base de Datos:** PostgreSQL
-* **Bibliotecas principales:**
-  * `HikariCP` (Pool de conexiones a DB)
-  * `dotenv-java` (Manejo de variables de entorno)
-  * `BCrypt` (Hasheo de contraseñas de usuarios)
-  * `OpenCSV` (Lectura e importación de datos masivos)
-  * `JUnit 5` & `Mockito` (Pruebas unitarias)
+| Componente | Tecnología |
+|---|---|
+| Lenguaje | Java 21 |
+| UI | JavaFX 21 + AtlantaFX |
+| Base de datos | PostgreSQL |
+| Gestor de dependencias | Maven |
+| Pool de conexiones | HikariCP |
+| Variables de entorno | dotenv-java |
+| Hasheo de contraseñas | BCrypt |
+| Importación CSV | OpenCSV |
+| Pruebas | JUnit 5 + Mockito |
+
+---
+
+## Requisitos Previos
+
+- JDK 21 o superior (se recomienda instalar con [SDKMAN](https://sdkman.io/))
+- Maven 3.9+
+- PostgreSQL 14+
+
+---
 
 ## Configuración del Entorno
 
-Aunque la aplicación no tiene una interfaz gráfica ejecutable en este momento, puedes configurar el entorno para correr las pruebas unitarias o continuar con el desarrollo.
+### 1. Clonar el repositorio
 
-### 1. Prerrequisitos
-* Tener instalado **JDK 21** o superior.
-* Tener instalado **Maven**.
-* Tener una instancia de **PostgreSQL** corriendo.
+```bash
+git clone <url-del-repositorio>
+cd registro-academico
+```
 
-### 2. Variables de Entorno
-Crea un archivo llamado `.env` en la raíz del proyecto (este archivo está ignorado en Git por seguridad) y configura tus credenciales de base de datos:
+### 2. Crear el archivo de variables de entorno
+
+Crea un archivo `.env` en la raíz del proyecto (ya está en `.gitignore`):
 
 ```env
 DB_HOST=localhost
@@ -50,14 +82,70 @@ DB_USER=tu_usuario
 DB_PASSWORD=tu_contraseña
 ```
 
-### 3. Base de Datos
-El script para generar la estructura de las tablas se encuentra en `src/main/resources/com/academico/core/db/schema.sql`.
-
-
-## Pruebas Unitarias
-Para validar la integridad del sistema y las reglas de negocio se verifican mediante la suite de pruebas automatizadas.
-Para descargar las dependencias y ejecutar los test, abre tu terminal y ejecuta.
+### 3. Crear la base de datos
 
 ```bash
-mvn clean test
+psql -U postgres -c "CREATE DATABASE registro_academico;"
 ```
+
+El esquema de tablas se aplica automáticamente al arrancar la aplicación por primera vez desde `src/main/resources/com/academico/db/schema.sql`.
+
+### 4. Compilar el proyecto
+
+```bash
+mvn compile
+```
+
+### 5. Ejecutar la aplicación
+
+```bash
+mvn javafx:run
+```
+
+### 6. Ejecutar las pruebas
+
+```bash
+mvn test
+```
+
+---
+
+## Roles del Sistema
+
+El sistema define tres roles con niveles de acceso distintos:
+
+| Rol | Responsabilidad |
+|---|---|
+| **Administrador** | Gestiona la estructura académica: alumnos, maestros, materias, grupos, inscripciones, configuración y utilerías. |
+| **Maestro** | Opera dentro de sus grupos asignados: define actividades, registra calificaciones, aplica bonus y genera reportes. |
+| **Alumno** | Consulta sus propios resultados. Solo lectura. *(Implementación futura)* |
+
+Para más detalle ver `docs/roles_permisos.docx`.
+
+---
+
+## Credenciales de Prueba
+
+Para desarrollo local, inserta usuarios de prueba generando los hashes con:
+
+```bash
+mvn compile exec:java -Dexec.mainClass="com.academico.MainApp"
+# Descomentar temporalmente la generación de hashes en main()
+```
+
+---
+
+## Estructura de la Base de Datos
+
+Las tablas principales son:
+
+```
+usuario → maestro / alumno
+materia → unidad
+grupo (materia + maestro) → inscripcion (alumno + grupo)
+inscripcion → resultado (calificacion por actividad)
+actividad_grupo (grupo + unidad + ponderacion) → resultado
+inscripcion → bonus
+```
+
+El esquema completo con índices y vistas de cálculo está en `src/main/resources/com/academico/db/schema.sql`.
