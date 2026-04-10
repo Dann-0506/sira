@@ -47,13 +47,21 @@ public class AlumnoService {
         }
     }
 
+    public void cambiarEstado(int id, boolean estado) throws Exception {
+        try {
+            alumnoDAO.cambiarEstado(id, estado);
+        } catch (SQLException e) {
+            throw new Exception("Error al actualizar el acceso del alumno.");
+        }
+    }
+
     public void eliminar(int id) throws Exception {
         try {
             alumnoDAO.eliminar(id);
         } catch (SQLException e) {
             // Manejo de Integridad Referencial
             if ("23503".equals(e.getSQLState())) {
-                throw new Exception("No se puede eliminar: El alumno tiene registros académicos vinculados.");
+                throw new Exception("No se puede eliminar: El alumno tiene registros académicos vinculados. Utiliza la opción 'Desactivar'.");
             }
             throw new Exception("Error al eliminar el registro.");
         }

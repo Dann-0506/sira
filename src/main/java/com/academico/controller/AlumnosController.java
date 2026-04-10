@@ -14,7 +14,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.scene.layout.Region;
-import javafx.util.Callback;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -69,10 +68,11 @@ public class AlumnosController {
         colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
 
-        Callback<TableColumn<Alumno, Void>, TableCell<Alumno, Void>> cellFactory = param -> new TableCell<>() {
+        colAcciones.setCellFactory(param -> new TableCell<>() {
             private final Button btnEditar = new Button("Editar");
+            private final Button btnEstado = new Button(); // Dinámico (Activar/Desactivar)
             private final Button btnEliminar = new Button("Eliminar");
-            private final HBox panel = new HBox(8, btnEditar, btnEliminar);
+            private final HBox panel = new HBox(8, btnEditar, btnEstado, btnEliminar);
 
             {
                 btnEditar.getStyleClass().addAll("accent", "flat");
@@ -81,15 +81,29 @@ public class AlumnosController {
 
                 btnEditar.setOnAction(e -> abrirEdicion(getTableView().getItems().get(getIndex())));
                 btnEliminar.setOnAction(e -> confirmarEliminacion(getTableView().getItems().get(getIndex())));
+                btnEstado.setOnAction(e -> confirmarCambioEstado(getTableView().getItems().get(getIndex())));
             }
 
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty ? null : panel);
+                
+                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                    setGraphic(null);
+                } else {
+                    Alumno a = (Alumno) getTableRow().getItem();
+                    
+                    if (a.isActivo()) {
+                        btnEstado.setText("Desactivar");
+                        btnEstado.setStyle("-fx-text-fill: #856404; -fx-background-color: #fff3cd;"); // Warning
+                    } else {
+                        btnEstado.setText("Activar");
+                        btnEstado.setStyle("-fx-text-fill: #155724; -fx-background-color: #d4edda;"); // Success
+                    }
+                    setGraphic(panel);
+                }
             }
-        };
-        colAcciones.setCellFactory(cellFactory);
+        });
     }
 
     private void cargarDatos() {
@@ -154,24 +168,43 @@ public class AlumnosController {
     }
 
     private void confirmarEliminacion(Alumno a) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Advertencia Crítica");
+        alert.setHeaderText("Vas a eliminar permanentemente a " + a.getNombre());
+        alert.setContentText("Esta acción es irreversible. ¿Deseas continuar?");
+        
+        ButtonType btnEliminar = new ButtonType("Eliminar definitivamente", ButtonBar.ButtonData.OK_DONE);
+        ButtonType btnCancelar = new ButtonType("Cancelar", ButtonBar.ButtonData.CANCEL_CLOSE);
+        alert.getButtonTypes().setAll(btnEliminar, btnCancelar);
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == btnEliminar) {
+            try {
+                alumnoService.eliminar(a.getId());
+                cargarDatos();
+                mostrarNotificacion("Alumno eliminado permanentemente.", false);
+            } catch (Exception e) {
+                mostrarNotificacion(e.getMessage(), true);
+            }
+        }
+    }
+
+    private void confirmarCambioEstado(Alumno a) {
+        boolean nuevoEstado = !a.isActivo();
+        String accionText = nuevoEstado ? "Activar" : "Desactivar";
+        
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmar eliminación");
-        alert.setHeaderText("¿Deseas eliminar a " + a.getNombre() + "?");
-        alert.setContentText("Esta acción no se puede deshacer.");
+        alert.setTitle("Confirmar " + accionText);
+        alert.setHeaderText("¿Deseas " + accionText.toLowerCase() + " el acceso de " + a.getNombre() + "?");
         
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
-                // El controlador solo pide eliminar, el servicio se encarga de la lógica
-                alumnoService.eliminar(a.getId());
-                
-                // Si tiene éxito, refrescamos y notificamos
-                cargarDatos();
-                mostrarNotificacion("Alumno eliminado correctamente.", false);
+                // Asume que agregaste este método a AlumnoService como acordamos en el paso anterior
+                alumnoService.cambiarEstado(a.getId(), nuevoEstado); 
+                cargarDatos(); 
+                mostrarNotificacion("Cuenta " + (nuevoEstado ? "activada" : "desactivada") + " correctamente.", false);
             } catch (Exception e) {
-                // Si el servicio detecta que tiene calificaciones (FK), 
-                // nos lanzará la excepción con el mensaje: 
-                // "No se puede eliminar: El alumno tiene historial académico."
                 mostrarNotificacion(e.getMessage(), true);
             }
         }
@@ -222,7 +255,8 @@ public class AlumnosController {
         fade.play();
     }
 
-    @FXML private void handleBusqueda() {
+    @FXML 
+    private void handleBusqueda() {
         String textoFiltro = campoBusqueda.getText().toLowerCase().trim();
 
         alumnosFiltrados.setPredicate(alumno -> {

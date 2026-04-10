@@ -8,16 +8,13 @@ import java.util.List;
 
 public class MaestroService {
     private final MaestroDAO maestroDAO;
-    private final UsuarioDAO usuarioDAO;
 
     public MaestroService(){
         this.maestroDAO = new MaestroDAO();
-        this.usuarioDAO = new UsuarioDAO();
     }
 
     public MaestroService(MaestroDAO maestroDAO, UsuarioDAO usuarioDAO) {
         this.maestroDAO = maestroDAO;
-        this.usuarioDAO = usuarioDAO;
     }
 
     public List<Maestro> listarTodos() throws Exception {

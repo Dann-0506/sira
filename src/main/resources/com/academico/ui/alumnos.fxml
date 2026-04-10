@@ -18,12 +18,18 @@
                 <HBox alignment="CENTER_LEFT" spacing="12">
                     <Label text="Catálogo de Alumnos" styleClass="title-2"/>
                     <Region HBox.hgrow="ALWAYS"/>
-                    <Button text="Importar CSV"
-                            styleClass="flat"
-                            onAction="#handleImportarCsv"/>
-                    <Button text="Nuevo alumno"
-                            styleClass="accent"
-                            onAction="#handleNuevo"/>
+                    
+                    <VBox alignment="CENTER_RIGHT">
+                        <Label text="Formato CSV esperado:" style="-fx-font-size: 10px; -fx-text-fill: -color-fg-muted;"/>
+                        <Label text="MATRÍCULA, NOMBRE, CORREO" style="-fx-font-size: 11px; -fx-font-weight: bold;"/>
+                    </VBox>
+
+                    <Button text="Importar CSV" styleClass="flat" onAction="#handleImportarCsv">
+                        <tooltip>
+                            <Tooltip text="Suba un archivo .csv (opcional con encabezado). Columnas: Matrícula, Nombre, Correo."/>
+                        </tooltip>
+                    </Button>
+                    <Button text="Nuevo alumno" styleClass="accent" onAction="#handleNuevo"/>
                 </HBox>
                 
                 <HBox alignment="CENTER_LEFT" spacing="30">

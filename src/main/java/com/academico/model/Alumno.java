@@ -6,6 +6,7 @@ public class Alumno {
     private String matricula;
     private String nombre;
     private String email;
+    private boolean activo;
 
     public Alumno() {}
 
@@ -31,6 +32,9 @@ public class Alumno {
 
     public String getEmail()                { return email; }
     public void setEmail(String email)      { this.email = email; }
+
+    public boolean isActivo() { return activo; }
+    public void setActivo(boolean activo) { this.activo = activo; }
 
     @Override
     public String toString() {
