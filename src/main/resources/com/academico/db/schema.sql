@@ -43,11 +43,12 @@ CREATE TABLE IF NOT EXISTS materia (
     total_unidades INT          NOT NULL CHECK (total_unidades > 0)
 );
 
-CREATE TABLE IF NOT EXISTS unidad (
+CREATE TABLE unidad (
     id          SERIAL       PRIMARY KEY,
-    materia_id  INT          NOT NULL UNIQUE REFERENCES materia(id) ON DELETE CASCADE,
-    numero      INT          NOT NULL UNIQUE CHECK (numero > 0),
-    nombre      VARCHAR(100) NOT NULL
+    materia_id  INT          NOT NULL REFERENCES materia(id) ON DELETE CASCADE,
+    numero      INT          NOT NULL CHECK (numero > 0),
+    nombre      VARCHAR(100) NOT NULL,
+    UNIQUE (materia_id, numero)
 );
 
 CREATE TABLE IF NOT EXISTS grupo (
