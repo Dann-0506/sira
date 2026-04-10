@@ -11,9 +11,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,7 +33,7 @@ public class AlumnosController {
     @FXML private Label errorNombre;
     @FXML private Label errorEmail;
 
-    @FXML private VBox panelFormulario;
+    @FXML private StackPane panelFormulario;
     @FXML private Label labelTituloFormulario;
     @FXML private TextField campoMatricula;
     @FXML private TextField campoNombre;
@@ -70,6 +70,7 @@ public class AlumnosController {
 
             {
                 btnEditar.getStyleClass().addAll("accent", "flat");
+                btnEstado.getStyleClass().addAll("flat");
                 btnEliminar.getStyleClass().addAll("danger", "flat");
                 panel.setStyle("-fx-alignment: center;");
 
@@ -87,13 +88,16 @@ public class AlumnosController {
                 } else {
                     Alumno a = (Alumno) getTableRow().getItem();
                     
+                    btnEstado.getStyleClass().removeAll("success", "warning");
+
                     if (a.isActivo()) {
                         btnEstado.setText("Desactivar");
-                        btnEstado.setStyle("-fx-text-fill: #856404; -fx-background-color: #fff3cd;"); // Warning
+                        btnEstado.getStyleClass().add("warning");
                     } else {
                         btnEstado.setText("Activar");
-                        btnEstado.setStyle("-fx-text-fill: #155724; -fx-background-color: #d4edda;"); // Success
+                        btnEstado.getStyleClass().add("success");
                     }
+                    
                     setGraphic(panel);
                 }
             }
