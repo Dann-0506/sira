@@ -1,8 +1,8 @@
 package com.academico.controller;
 
 import com.academico.model.Maestro;
-import com.academico.service.individuals.MaestroService;
 import com.academico.service.CargaDatosService;
+import com.academico.service.individuals.MaestroService;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -12,6 +12,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
+import javafx.util.Duration;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,40 +20,43 @@ import java.util.List;
 
 public class MaestrosController { 
 
+    // === ELEMENTOS PRINCIPALES ===
     @FXML private TableView<Maestro> tablaMaestros;
     @FXML private TableColumn<Maestro, String> colNumEmpleado;
     @FXML private TableColumn<Maestro, String> colNombre;
     @FXML private TableColumn<Maestro, String> colEmail;
     @FXML private TableColumn<Maestro, Void> colAcciones;
-
     @FXML private Pagination paginacionMaestros;
-
     @FXML private TextField campoBusqueda;
+
+    // === FORMULARIO DOCENTE ===
+    @FXML private StackPane panelFormulario;
+    @FXML private Label labelTituloFormulario;
     @FXML private TextField campoNumEmpleado;
     @FXML private TextField campoNombre;
     @FXML private TextField campoEmail;
-    
-    @FXML private Label labelTituloFormulario;
-    @FXML private Label mensajeGeneral;
-    @FXML private Label errorEmail;
-    @FXML private Label errorNombre;
-    @FXML private Label errorMatricula;
     @FXML private Label labelNotaPassword;
+    @FXML private Button btnRestablecerPassword;
+    
+    // Etiquetas de error reservadas para validaciones visuales
+    @FXML private Label errorMatricula; 
+    @FXML private Label errorNombre;
+    @FXML private Label errorEmail;
+
+    // === GLOBALES (Confirmación y Notificación) ===
+    @FXML private StackPane panelConfirmacion;
     @FXML private Label lblTituloConfirmacion;
     @FXML private Label lblMensajeConfirmacion;
-
-    @FXML private Button btnRestablecerPassword;
     @FXML private Button btnConfirmarAccion;
-    
-    @FXML private StackPane panelConfirmacion;
-    @FXML private StackPane panelFormulario;
+    @FXML private Label mensajeGeneral;
 
-    private Runnable accionPendiente;
+    // === VARIABLES DE ESTADO Y SERVICIOS ===
     private final MaestroService maestroService = new MaestroService();
     private final CargaDatosService cargaDatosService = new CargaDatosService();
     private final ObservableList<Maestro> listaMaestros = FXCollections.observableArrayList();
     private FilteredList<Maestro> maestrosFiltrados;
     private Maestro maestroEnEdicion = null;
+    private Runnable accionPendiente;
     private final int FILAS_POR_PAGINA = 15;
 
     @FXML
@@ -61,6 +65,10 @@ public class MaestrosController {
         configurarColumnas();
         cargarDatos();
     }
+
+    // ==========================================
+    // LÓGICA PRINCIPAL DE DOCENTES
+    // ==========================================
 
     private void configurarColumnas() {
         colNumEmpleado.setCellValueFactory(new PropertyValueFactory<>("numEmpleado"));
@@ -71,8 +79,8 @@ public class MaestrosController {
             private final Button btnEditar = new Button("Editar");
             private final Button btnEstado = new Button(); 
             private final Button btnEliminar = new Button("Eliminar");
-            // SOLUCIÓN: Agregamos los 3 botones al panel
             private final HBox panel = new HBox(8, btnEditar, btnEstado, btnEliminar); 
+            
             {
                 btnEditar.getStyleClass().addAll("accent", "flat");
                 btnEstado.getStyleClass().addAll("flat");
@@ -80,8 +88,8 @@ public class MaestrosController {
                 panel.setStyle("-fx-alignment: center;");
 
                 btnEditar.setOnAction(e -> abrirEdicion(getTableView().getItems().get(getIndex())));
-                btnEliminar.setOnAction(e -> confirmarEliminacion(getTableView().getItems().get(getIndex())));
                 btnEstado.setOnAction(e -> confirmarCambioEstado(getTableView().getItems().get(getIndex())));
+                btnEliminar.setOnAction(e -> confirmarEliminacion(getTableView().getItems().get(getIndex())));
             }
             
             @Override
@@ -142,6 +150,40 @@ public class MaestrosController {
         });
     }
 
+    // ==========================================
+    // GESTIÓN DEL FORMULARIO
+    // ==========================================
+
+    @FXML 
+    private void handleNuevo() { 
+        maestroEnEdicion = null; 
+        limpiarFormulario();
+        
+        labelTituloFormulario.setText("Nuevo Docente");
+        labelNotaPassword.setText("Nota: Los docentes nuevos se crean con la contraseña predeterminada '123456'.");
+        btnRestablecerPassword.setVisible(false);
+        btnRestablecerPassword.setManaged(false);
+
+        panelFormulario.setVisible(true); 
+        panelFormulario.setManaged(true); 
+    }
+
+    private void abrirEdicion(Maestro m) {
+        maestroEnEdicion = m;
+        
+        campoNumEmpleado.setText(m.getNumEmpleado());
+        campoNombre.setText(m.getNombre());
+        campoEmail.setText(m.getEmail());
+        
+        labelTituloFormulario.setText("Editar Docente");
+        labelNotaPassword.setText("Nota: Si el usuario olvidó su acceso, puedes restablecer su contraseña.");
+        btnRestablecerPassword.setVisible(true);
+        btnRestablecerPassword.setManaged(true);
+
+        panelFormulario.setVisible(true);
+        panelFormulario.setManaged(true);
+    }
+
     @FXML
     private void handleGuardar() {
         Maestro m = (maestroEnEdicion != null) ? maestroEnEdicion : new Maestro();
@@ -151,14 +193,51 @@ public class MaestrosController {
 
         try {
             maestroService.guardar(m, maestroEnEdicion != null);
-            mostrarNotificacion("Docente guardado con éxito", false);
-            cargarDatos();
-
+            mostrarNotificacion("Docente guardado con éxito.", false);
             handleCancelar();
+            cargarDatos();
         } catch (Exception e) {
             mostrarNotificacion(e.getMessage(), true);
         }
     }
+
+    @FXML
+    private void handleRestablecerPassword() {
+        if (maestroEnEdicion == null) return;
+
+        mostrarConfirmacion(
+            "Restablecer Contraseña",
+            "¿Deseas restablecer la contraseña de " + maestroEnEdicion.getNombre() + "?\nSu contraseña volverá a ser '123456' temporalmente.",
+            "Restablecer",
+            "danger",
+            () -> {
+                try {
+                    maestroService.restablecerPassword(maestroEnEdicion.getId());
+                    mostrarNotificacion("Contraseña restablecida a '123456'.", false);
+                    handleCancelar();
+                } catch (Exception e) {
+                    mostrarNotificacion(e.getMessage(), true);
+                }
+            }
+        );
+    }
+
+    @FXML 
+    private void handleCancelar() { 
+        panelFormulario.setVisible(false); 
+        panelFormulario.setManaged(false); 
+        limpiarFormulario();
+    }
+
+    private void limpiarFormulario() { 
+        campoNumEmpleado.clear(); 
+        campoNombre.clear(); 
+        campoEmail.clear(); 
+    }
+
+    // ==========================================
+    // COMPONENTES GLOBALES (Importación, Notificaciones y Modales)
+    // ==========================================
 
     @FXML
     private void handleImportarCsv() {
@@ -176,9 +255,8 @@ public class MaestrosController {
                     mostrarNotificacion("¡Todos los docentes importados con éxito!", false);
                 } else {
                     mostrarNotificacion("Importación completada con " + errores.size() + " errores.", true);
-                    mostrarDetallesErrores(errores, tablaMaestros.getScene().getWindow()); // Usamos el nuevo método
+                    mostrarDetallesErrores(errores, tablaMaestros.getScene().getWindow()); 
                 }
-                
                 cargarDatos(); 
                 
             } catch (Exception e) {
@@ -187,20 +265,20 @@ public class MaestrosController {
         }
     }
 
-    private void abrirEdicion(Maestro m) {
-        maestroEnEdicion = m;
-        
-        campoNumEmpleado.setText(m.getNumEmpleado());
-        campoNombre.setText(m.getNombre());
-        campoEmail.setText(m.getEmail());
-        
-        labelTituloFormulario.setText("Editar Docente");
-        labelNotaPassword.setText("Nota: Si el usuario olvidó su acceso, puedes restablecer su contraseña.");
-        btnRestablecerPassword.setVisible(true);
-        btnRestablecerPassword.setManaged(true);
+    private void mostrarDetallesErrores(List<String> errores, javafx.stage.Window ventanaPadre) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.initOwner(ventanaPadre); 
+        alert.setTitle("Detalle de la Importación");
+        alert.setHeaderText("Algunas filas no pudieron procesarse:");
 
-        panelFormulario.setVisible(true);
-        panelFormulario.setManaged(true);
+        TextArea textArea = new TextArea(String.join("\n", errores));
+        textArea.setEditable(false);
+        textArea.setWrapText(false);
+        textArea.setPrefWidth(550);
+        textArea.setPrefHeight(250);
+
+        alert.getDialogPane().setContent(textArea);
+        alert.showAndWait();
     }
 
     private void confirmarCambioEstado(Maestro m) {
@@ -242,53 +320,6 @@ public class MaestrosController {
         );
     }
 
-    @FXML 
-    private void handleNuevo() { 
-        maestroEnEdicion = null; 
-        limpiar();
-        
-        labelTituloFormulario.setText("Nuevo Docente");
-        labelNotaPassword.setText("Nota: Los docentes nuevos se crean con la contraseña predeterminada '123456'.");
-        btnRestablecerPassword.setVisible(false);
-        btnRestablecerPassword.setManaged(false);
-
-        panelFormulario.setVisible(true); 
-        panelFormulario.setManaged(true); 
-    }
-
-    @FXML 
-    private void handleCancelar() { 
-        panelFormulario.setVisible(false); 
-        panelFormulario.setManaged(false); 
-    }
-
-    @FXML
-    private void handleRestablecerPassword() {
-        if (maestroEnEdicion == null) return;
-
-        mostrarConfirmacion(
-            "Restablecer Contraseña",
-            "¿Deseas restablecer la contraseña de " + maestroEnEdicion.getNombre() + "?\nSu contraseña volverá a ser '123456' temporalmente.",
-            "Restablecer",
-            "danger",
-            () -> {
-                try {
-                    maestroService.restablecerPassword(maestroEnEdicion.getId());
-                    mostrarNotificacion("Contraseña restablecida a '123456'.", false);
-                    
-                    handleCancelar();
-                } catch (Exception e) {
-                    mostrarNotificacion(e.getMessage(), true);
-                }
-            }
-        );
-    }
-    private void limpiar() { 
-        campoNumEmpleado.clear(); 
-        campoNombre.clear(); 
-        campoEmail.clear(); 
-    }
-
     private void mostrarNotificacion(String mensaje, boolean esError) {
         mensajeGeneral.setText(mensaje);
         mensajeGeneral.setOpacity(1.0);
@@ -301,28 +332,25 @@ public class MaestrosController {
             mensajeGeneral.setStyle("-fx-background-color: #d4edda; -fx-text-fill: #155724; -fx-padding: 12 25; -fx-background-radius: 30; -fx-font-weight: bold;");
         }
 
-        javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(javafx.util.Duration.seconds(1), mensajeGeneral);
-        fade.setDelay(javafx.util.Duration.seconds(2));
+        javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(Duration.seconds(1), mensajeGeneral);
+        fade.setDelay(Duration.seconds(2));
         fade.setFromValue(1.0);
         fade.setToValue(0.0);
         fade.setOnFinished(e -> {
             mensajeGeneral.setVisible(false);
+            mensajeGeneral.setManaged(false);
         });
         fade.play();
     }
-
-    // === LÓGICA DEL PANEL DE CONFIRMACIÓN ===
 
     private void mostrarConfirmacion(String titulo, String mensaje, String textoBoton, String claseCSSBoton, Runnable accion) {
         lblTituloConfirmacion.setText(titulo);
         lblMensajeConfirmacion.setText(mensaje);
         btnConfirmarAccion.setText(textoBoton);
 
-        // Limpiamos estilos anteriores y aplicamos el nuevo (accent o danger)
         btnConfirmarAccion.getStyleClass().removeAll("accent", "danger");
         btnConfirmarAccion.getStyleClass().add(claseCSSBoton);
 
-        // Guardamos la acción que se ejecutará si hace clic en confirmar
         this.accionPendiente = accion;
 
         panelConfirmacion.setVisible(true);
@@ -342,25 +370,5 @@ public class MaestrosController {
             accionPendiente.run(); 
         }
         handleCancelarConfirmacion();
-    }
-
-    private void mostrarDetallesErrores(List<String> errores, javafx.stage.Window ventanaPadre) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-
-        alert.initOwner(ventanaPadre); 
-        
-        alert.setTitle("Detalle de la Importación");
-        alert.setHeaderText("Algunas filas no pudieron procesarse:");
-
-        TextArea textArea = new TextArea(String.join("\n", errores));
-        textArea.setEditable(false);
-        textArea.setWrapText(false);
-        
-        textArea.setPrefWidth(550);
-        textArea.setPrefHeight(250);
-
-        alert.getDialogPane().setContent(textArea);
-        
-        alert.showAndWait();
     }
 }
