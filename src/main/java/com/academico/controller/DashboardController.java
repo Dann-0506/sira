@@ -1,38 +1,43 @@
 package com.academico.controller;
 
 import com.academico.model.Usuario;
-import com.academico.util.SessionManagerUtil;
-import com.academico.util.NavegationUtil;
 import com.academico.service.individuals.UsuarioService;
+import com.academico.util.NavegationUtil;
+import com.academico.util.SessionManagerUtil;
 
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
 import javafx.animation.PauseTransition;
-import javafx.util.Duration;
-
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 
 public class DashboardController {
 
-    @FXML private Label         labelNombreUsuario;
-    @FXML private Label         labelRolUsuario;
-    @FXML private Label         labelBienvenida;
-    @FXML private VBox          menuNavegacion;
-    @FXML private StackPane     areaPrincipal;
-    @FXML private StackPane     panelPerfilFlotante;
-    @FXML private TextField     campoPerfilNombre;
-    @FXML private TextField     campoPerfilEmail;
-    @FXML private PasswordField campoPerfilPassword;
-    @FXML private Label         mensajePerfil;
+    // === ELEMENTOS PRINCIPALES (Menú y Cabecera) ===
+    @FXML private Label labelNombreUsuario;
+    @FXML private Label labelRolUsuario;
+    @FXML private Label labelBienvenida;
+    @FXML private VBox menuNavegacion;
+    @FXML private StackPane areaPrincipal;
 
-    // Rastrea el botón activo para resaltarlo
+    // === ELEMENTOS DE MI PERFIL (Panel Flotante) ===
+    @FXML private StackPane panelPerfilFlotante;
+    @FXML private TextField campoPerfilNombre;
+    @FXML private TextField campoPerfilEmail;
+    @FXML private PasswordField campoPerfilPassword;
+    @FXML private Label mensajePerfil;
+
+    // === VARIABLES DE ESTADO Y SERVICIOS ===
+    private final UsuarioService usuarioService = new UsuarioService();
     private Button botonActivo;
 
-    private final UsuarioService usuarioService = new UsuarioService();
+    // ==========================================
+    // INICIALIZACIÓN
+    // ==========================================
 
     @FXML
     public void initialize() {
@@ -48,6 +53,7 @@ public class DashboardController {
 
         construirMenu(usuario.getRol());
 
+        // Verificación de seguridad por contraseña genérica
         if (usuario.isRequiereCambioPassword()) {
             javafx.application.Platform.runLater(() -> {
                 abrirPerfilFlotante();
@@ -55,6 +61,10 @@ public class DashboardController {
             });
         }
     }
+
+    // ==========================================
+    // LÓGICA DE NAVEGACIÓN Y MENÚ
+    // ==========================================
 
     private void construirMenu(String rol) {
         menuNavegacion.getChildren().clear();
@@ -117,25 +127,6 @@ public class DashboardController {
         botonActivo.getStyleClass().add("accent");
     }
 
-    @FXML
-    private void handleCerrarSesion() {
-        SessionManagerUtil.cerrarSesion();
-
-        javafx.stage.Stage stage = (javafx.stage.Stage) menuNavegacion.getScene().getWindow();
-
-        stage.setMaximized(false);
-        stage.setResizable(false);
-
-        stage.setMinWidth(500);
-        stage.setMinHeight(650);
-        stage.setWidth(500);
-        stage.setHeight(650);
-
-        NavegationUtil.irA(NavegationUtil.LOGIN);
-
-        stage.centerOnScreen();
-    }
-
     private String formatearRol(String rol) {
         return switch (rol) {
             case "admin"   -> "Administrador";
@@ -145,7 +136,31 @@ public class DashboardController {
         };
     }
 
-    // === LÓGICA DE MI PERFIL ===
+    // ==========================================
+    // LÓGICA DE SESIÓN
+    // ==========================================
+
+    @FXML
+    private void handleCerrarSesion() {
+        SessionManagerUtil.cerrarSesion();
+
+        javafx.stage.Stage stage = (javafx.stage.Stage) menuNavegacion.getScene().getWindow();
+
+        // Restaurar dimensiones de la ventana de Login
+        stage.setMaximized(false);
+        stage.setResizable(false);
+        stage.setMinWidth(500);
+        stage.setMinHeight(650);
+        stage.setWidth(500);
+        stage.setHeight(650);
+
+        NavegationUtil.irA(NavegationUtil.LOGIN);
+        stage.centerOnScreen();
+    }
+
+    // ==========================================
+    // GESTIÓN DE MI PERFIL
+    // ==========================================
 
     private void abrirPerfilFlotante() {
         Usuario actual = SessionManagerUtil.getUsuarioActual();
@@ -155,12 +170,6 @@ public class DashboardController {
         
         panelPerfilFlotante.setVisible(true);
         panelPerfilFlotante.setManaged(true);
-    }
-
-    @FXML
-    private void handleCerrarPerfil() {
-        panelPerfilFlotante.setVisible(false);
-        panelPerfilFlotante.setManaged(false);
     }
 
     @FXML
@@ -178,9 +187,9 @@ public class DashboardController {
         try {
             usuarioService.actualizarPerfil(actual.getId(), nuevoNombre, nuevoEmail, nuevaPass);
             
+            // Actualizar variables y UI en caliente
             actual.setNombre(nuevoNombre);
             actual.setEmail(nuevoEmail);
-            
             labelNombreUsuario.setText(nuevoNombre);
             labelBienvenida.setText("Bienvenido, " + nuevoNombre.split(" ")[0] + ".");
             
@@ -195,9 +204,14 @@ public class DashboardController {
         }
     }
 
+    @FXML
+    private void handleCerrarPerfil() {
+        panelPerfilFlotante.setVisible(false);
+        panelPerfilFlotante.setManaged(false);
+    }
+
     private void mostrarNotificacionPerfil(String mensaje, boolean esError, boolean persistente) {
         mensajePerfil.setText(mensaje);
-        // Reset obligatorio para que vuelva a verse si antes se desvaneció
         mensajePerfil.setOpacity(1.0); 
         mensajePerfil.setVisible(true);
         mensajePerfil.setManaged(true);
@@ -208,7 +222,6 @@ public class DashboardController {
             mensajePerfil.setStyle("-fx-background-color: #d4edda; -fx-text-fill: #155724; -fx-padding: 8; -fx-background-radius: 5;");
         }
 
-        // Si NO es persistente, aplicamos la animación de desvanecimiento
         if (!persistente) {
             javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(Duration.seconds(1), mensajePerfil);
             fade.setDelay(Duration.seconds(2));
