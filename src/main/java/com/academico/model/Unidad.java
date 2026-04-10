@@ -2,19 +2,24 @@ package com.academico.model;
 
 public class Unidad {
     private int id;
+    private int materiaId;
     private int numero;
     private String nombre;
 
     public Unidad() {}
 
-    public Unidad(int id, int numero, String nombre) {
+    public Unidad(int id, int materiaId, int numero, String nombre) {
         this.id = id;
+        this.materiaId = materiaId;
         this.numero = numero;
         this.nombre = nombre;
     }
 
     public int getId()                  { return id; }
     public void setId(int id)           { this.id = id; }
+
+    public int getMateriaId()           { return materiaId; }
+    public void setMateriaId(int materiaId)          { this.materiaId = materiaId; }
 
     public int getNumero()              { return numero; }
     public void setNumero(int numero)   { this.numero = numero; }

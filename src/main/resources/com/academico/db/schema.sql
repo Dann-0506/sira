@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS maestro (
 
 CREATE TABLE IF NOT EXISTS alumno (
     id         SERIAL      PRIMARY KEY,
-    usuario_id INT         UNIQUE REFERENCES usuario(id) ON DELETE SET NULL,
+    usuario_id INT         UNIQUE REFERENCES usuario(id) ON DELETE CASCADE,
     matricula  VARCHAR(20) NOT NULL UNIQUE
 );
 
@@ -44,9 +44,10 @@ CREATE TABLE IF NOT EXISTS materia (
 );
 
 CREATE TABLE IF NOT EXISTS unidad (
-    id     SERIAL       PRIMARY KEY,
-    numero INT          NOT NULL CHECK (numero > 0),
-    nombre VARCHAR(100) NOT NULL
+    id          SERIAL       PRIMARY KEY,
+    materia_id  INT          NOT NULL UNIQUE REFERENCES materia(id) ON DELETE CASCADE,
+    numero      INT          NOT NULL UNIQUE CHECK (numero > 0),
+    nombre      VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS grupo (

@@ -1,12 +1,18 @@
 package com.academico.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Materia {
     private int id;
     private String clave;
     private String nombre;
     private int totalUnidades;
+    private List<Unidad> unidades;
 
-    public Materia() {}
+    public Materia() {
+        this.unidades = new ArrayList<>();
+    }
 
     public Materia(int id, String clave, String nombre, int totalUnidades) {
         this.id = id;
@@ -26,6 +32,9 @@ public class Materia {
 
     public int getTotalUnidades()                       { return totalUnidades; }
     public void setTotalUnidades(int totalUnidades)     { this.totalUnidades = totalUnidades; }
+
+    public List<Unidad> getUnidades()                   { return unidades; }
+    public void setUnidades(List<Unidad> unidades)      { this.unidades = unidades; }
 
     @Override
     public String toString() {

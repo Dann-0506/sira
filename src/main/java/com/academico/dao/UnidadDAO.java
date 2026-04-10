@@ -15,6 +15,7 @@ public class UnidadDAO {
     private Unidad mapear(ResultSet rs) throws SQLException {
         Unidad u = new Unidad();
         u.setId(rs.getInt("id"));
+        u.setMateriaId(rs.getInt("materia_id"));
         u.setNumero(rs.getInt("numero"));
         u.setNombre(rs.getString("nombre"));
         return u;
@@ -66,11 +67,12 @@ public class UnidadDAO {
     // === Escritura ===
 
     public Unidad insertar(Unidad u) throws SQLException {
-        String sql = "INSERT INTO unidad (numero, nombre) VALUES (?, ?) RETURNING id";
+        String sql = "INSERT INTO unidad (materia_id, numero, nombre) VALUES (?, ?, ?) RETURNING id";
         try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, u.getNumero());
-            ps.setString(2, u.getNombre());
+            ps.setInt(1, u.getMateriaId());
+            ps.setInt(2, u.getNumero());
+            ps.setString(3, u.getNombre());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     u.setId(rs.getInt("id"));
@@ -83,12 +85,13 @@ public class UnidadDAO {
     // === Actualización ===
 
     public void actualizar(Unidad u) throws SQLException {
-        String sql = "UPDATE unidad SET numero = ?, nombre = ? WHERE id = ?";
+        String sql = "UPDATE unidad SET materia_id = ?, numero = ?, nombre = ? WHERE id = ?";
         try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, u.getNumero());
-            ps.setString(2, u.getNombre());
-            ps.setInt(3, u.getId());
+            ps.setInt(1, u.getMateriaId());
+            ps.setInt(2, u.getNumero());
+            ps.setString(3, u.getNombre());
+            ps.setInt(4, u.getId());
             ps.executeUpdate();
         }
     }
