@@ -55,7 +55,7 @@ src/main/java/com/academico/
 
 ## Requisitos Previos
 
-- JDK 21 o superior (se recomienda instalar con [SDKMAN](https://sdkman.io/))
+- JDK 21 o superior
 - Maven 3.9+
 - PostgreSQL 14+
 
