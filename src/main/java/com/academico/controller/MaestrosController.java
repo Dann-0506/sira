@@ -17,15 +17,24 @@ import java.io.FileInputStream;
 import java.util.List;
 import java.util.Optional;
 
-public class MaestrosController {
-  
+public class MaestrosController { 
+
     @FXML private TableView<Maestro> tablaMaestros;
-    @FXML private TableColumn<Maestro, String> colNumEmpleado, colNombre, colEmail;
+    @FXML private TableColumn<Maestro, String> colNumEmpleado;
+    @FXML private TableColumn<Maestro, String> colNombre;
+    @FXML private TableColumn<Maestro, String> colEmail;
     @FXML private TableColumn<Maestro, Void> colAcciones;
     @FXML private Pagination paginacionMaestros;
-    @FXML private TextField campoBusqueda, campoNumEmpleado, campoNombre, campoEmail;
+    @FXML private TextField campoBusqueda;
+    @FXML private TextField campoNumEmpleado;
+    @FXML private TextField campoNombre;
+    @FXML private TextField campoEmail;
     @FXML private VBox panelFormulario;
-    @FXML private Label labelTituloFormulario, mensajeGeneral;
+    @FXML private Label labelTituloFormulario;
+    @FXML private Label mensajeGeneral;
+    @FXML private Label errorEmail;
+    @FXML private Label errorNombre;
+    @FXML private Label errorMatricula;
 
     private final MaestroService maestroService = new MaestroService();
     private final CargaDatosService cargaDatosService = new CargaDatosService();

@@ -1,7 +1,6 @@
 package com.academico.service.individuals;
 
 import com.academico.dao.MaestroDAO;
-import com.academico.dao.UsuarioDAO;
 import com.academico.model.Maestro;
 import com.academico.service.AuthService;
 
