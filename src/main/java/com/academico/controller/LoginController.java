@@ -57,9 +57,16 @@ public class LoginController {
                 SessionManagerUtil.iniciarSesion(usuario);
 
                 javafx.stage.Stage stage = (javafx.stage.Stage) botonLogin.getScene().getWindow();
-                stage.setMaximized(true);
+                stage.setResizable(true);
 
-                navegarSegunRol(usuario.getRol());
+                
+
+                javafx.application.Platform.runLater(() -> {
+                    stage.setMaximized(true);
+                    stage.setMinWidth(1024);
+                    stage.setMinHeight(720);
+                    navegarSegunRol(usuario.getRol());
+                });
             } else {
                 mostrarError(errorGeneral,
                     "Correo o contraseña incorrectos.");

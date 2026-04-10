@@ -94,7 +94,20 @@ public class DashboardController {
     @FXML
     private void handleCerrarSesion() {
         SessionManagerUtil.cerrarSesion();
+
+        javafx.stage.Stage stage = (javafx.stage.Stage) menuNavegacion.getScene().getWindow();
+
+        stage.setMaximized(false);
+        stage.setResizable(false);
+
+        stage.setMinWidth(500);
+        stage.setMinHeight(650);
+        stage.setWidth(500);
+        stage.setHeight(650);
+
         NavegationUtil.irA(NavegationUtil.LOGIN);
+
+        stage.centerOnScreen();
     }
 
     private String formatearRol(String rol) {

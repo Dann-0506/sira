@@ -19,13 +19,16 @@ public class MainApp extends Application {
         Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
 
         stage.setTitle("Sistema de Registro de Resultados Académicos");
-        stage.setMinWidth(1280);
-        stage.setMinHeight(720);
-        stage.setWidth(1280);
-        stage.setHeight(720);
+        stage.setResizable(false);
+        stage.setMinWidth(500);
+        stage.setMinHeight(650);
+        stage.setWidth(500);
+        stage.setHeight(650);
 
         NavegationUtil.irA(NavegationUtil.LOGIN);
         stage.show();
+
+        stage.centerOnScreen();
     }
 
     @Override

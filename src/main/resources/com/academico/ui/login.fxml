@@ -7,67 +7,59 @@
 <StackPane xmlns="http://javafx.com/javafx/21"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.academico.controller.LoginController"
-           style="-fx-background-color: #E8EDF2;">
+           style="-fx-background-color: #F3F4F6;">
 
     <VBox spacing="0"
-          maxWidth="400"
-          maxHeight="400"
+          maxWidth="360"
+          maxHeight="440" 
           style="-fx-background-color: white;
-                 -fx-background-radius: 12;
-                 -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 20, 0, 0, 4);">
+                 -fx-background-radius: 16;
+                 -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 20, 0, 0, 5);">
              
-        <!-- Encabezado -->
-        <VBox alignment="CENTER" spacing="6">
-            <padding><Insets top="32" right="32" bottom="24" left="32"/></padding>
+        <VBox alignment="CENTER" spacing="8"> <padding><Insets top="32" right="32" bottom="16" left="32"/></padding>
+
+            <StackPane style="-fx-background-color: #0969da; -fx-background-radius: 50; -fx-min-width: 50; -fx-min-height: 50; -fx-max-width: 50; -fx-max-height: 50;">
+                <Label text="RA" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 18;"/>
+            </StackPane>
+
             <Label text="Registro Académico"
-                   styleClass="title-2"/>
-            <Label text="Ingresa tus credenciales para continuar"
+                   styleClass="title-2"
+                   style="-fx-font-weight: bold;"/>
+                   
+            <Label text="Ingresa tus credenciales"
                    styleClass="text-muted"/>
         </VBox>
 
-        <Separator/>
-
-        <!-- Formulario -->
-        <VBox spacing="16">
-            <padding><Insets top="24" right="32" bottom="0" left="32"/></padding>
+        <VBox spacing="16"> <padding><Insets top="0" right="32" bottom="32" left="32"/></padding>
 
             <VBox spacing="4">
                 <Label text="Correo electrónico" styleClass="text-bold"/>
                 <TextField fx:id="campEmail"
-                           promptText="usuario@institucion.edu"/>
-                <Label fx:id="errorEmail"
-                       styleClass="text-danger"
-                       visible="false"
-                       managed="false"/>
+                           promptText="usuario@institucion.edu"
+                           style="-fx-pref-height: 36;"/>
+                <Label fx:id="errorEmail" styleClass="text-danger" visible="false" managed="false"/>
             </VBox>
 
             <VBox spacing="4">
                 <Label text="Contraseña" styleClass="text-bold"/>
                 <PasswordField fx:id="campPassword"
-                               promptText="••••••••"/>
-                <Label fx:id="errorPassword"
-                       styleClass="text-danger"
-                       visible="false"
-                       managed="false"/>
+                               promptText="••••••••"
+                               style="-fx-pref-height: 36;"/>
+                <Label fx:id="errorPassword" styleClass="text-danger" visible="false" managed="false"/>
             </VBox>
 
-            <Label fx:id="errorGeneral"
-                   styleClass="text-danger"
-                   wrapText="true"
-                   visible="false"
-                   managed="false"/>
+            <Label fx:id="errorGeneral" styleClass="text-danger" wrapText="true" visible="false" managed="false"/>
+
+            <Button fx:id="botonLogin"
+                    text="Iniciar sesión"
+                    maxWidth="Infinity"
+                    defaultButton="true"
+                    styleClass="accent"
+                    onAction="#handleLogin"
+                    style="-fx-pref-height: 40; -fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand;">
+                <VBox.margin>
+                    <Insets top="8"/> </VBox.margin>
+            </Button>
         </VBox>
-
-        <VBox>
-              <padding><Insets top="24" right="32" bottom="32" left="32"/></padding>
-              <Button fx:id="botonLogin"
-                     text="Iniciar sesión"
-                     maxWidth="Infinity"
-                     defaultButton="true"
-                     styleClass="accent"
-                     onAction="#handleLogin"/>
-       </VBox>
-
     </VBox>
-
 </StackPane>
