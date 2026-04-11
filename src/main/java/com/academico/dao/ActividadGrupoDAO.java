@@ -9,9 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Objeto de Acceso a Datos (DAO) para Actividades (Estructura de Evaluación).
+ */
 public class ActividadGrupoDAO {
 
-    // === Mapeo de ResultSet a ActividadGrupo ===
+    // ==========================================
+    // MAPEO DE RESULTADOS (RowMapper interno)
+    // ==========================================
 
     private ActividadGrupo mapear(ResultSet rs) throws SQLException {
         ActividadGrupo a = new ActividadGrupo();
@@ -20,25 +25,31 @@ public class ActividadGrupoDAO {
         a.setUnidadId(rs.getInt("unidad_id"));
         a.setNombre(rs.getString("nombre"));
         a.setPonderacion(rs.getBigDecimal("ponderacion"));
-        try { a.setUnidadNumero(rs.getInt("unidad_numero")); } catch (SQLException ignored) {}
-        try { a.setUnidadNombre(rs.getString("unidad_nombre")); } catch (SQLException ignored) {}
+        
+        // Bloque Try-Catch intencional: Algunas inserciones no devuelven los datos del JOIN
+        try { 
+            a.setUnidadNumero(rs.getInt("unidad_numero")); 
+            a.setUnidadNombre(rs.getString("unidad_nombre")); 
+        } catch (SQLException ignored) {
+            // Ignorado silenciosamente si la columna no viene en el ResultSet
+        }
+        
         return a;
     }
 
-
-    // === Consulta ===
+    // ==========================================
+    // OPERACIONES DE LECTURA (Consultas)
+    // ==========================================
 
     public Optional<ActividadGrupo> findById(int id) throws SQLException {
         String sql = """
-                SELECT ag.*,
-                    u.numero AS unidad_numero,
-                    u.nombre AS unidad_nombre
+                SELECT ag.*, u.numero AS unidad_numero, u.nombre AS unidad_nombre
                 FROM actividad_grupo ag
                 JOIN unidad u ON u.id = ag.unidad_id
                 WHERE ag.id = ?
                 """;
         try (Connection conn = DatabaseManagerUtil.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next() ? Optional.of(mapear(rs)) : Optional.empty();
@@ -46,12 +57,9 @@ public class ActividadGrupoDAO {
         }
     }
 
-    public List<ActividadGrupo> findByGrupoYUnidad(int grupoId, int unidadId)
-            throws SQLException {
+    public List<ActividadGrupo> findByGrupoYUnidad(int grupoId, int unidadId) throws SQLException {
         String sql = """
-                SELECT ag.*,
-                       u.numero AS unidad_numero,
-                       u.nombre AS unidad_nombre
+                SELECT ag.*, u.numero AS unidad_numero, u.nombre AS unidad_nombre
                 FROM actividad_grupo ag
                 JOIN unidad u ON u.id = ag.unidad_id
                 WHERE ag.grupo_id = ? AND ag.unidad_id = ?
@@ -71,9 +79,7 @@ public class ActividadGrupoDAO {
 
     public List<ActividadGrupo> findByGrupo(int grupoId) throws SQLException {
         String sql = """
-                SELECT ag.*,
-                       u.numero AS unidad_numero,
-                       u.nombre AS unidad_nombre
+                SELECT ag.*, u.numero AS unidad_numero, u.nombre AS unidad_nombre
                 FROM actividad_grupo ag
                 JOIN unidad u ON u.id = ag.unidad_id
                 WHERE ag.grupo_id = ?
@@ -90,10 +96,6 @@ public class ActividadGrupoDAO {
         return lista;
     }
 
-    /**
-     * Suma actual de ponderaciones para un grupo/unidad.
-     * Usado para validar en tiempo real antes de guardar.
-     */
     public BigDecimal sumaPonderaciones(int grupoId, int unidadId) throws SQLException {
         String sql = """
                 SELECT COALESCE(SUM(ponderacion), 0)
@@ -111,14 +113,14 @@ public class ActividadGrupoDAO {
         }
     }
 
-
-    // === Escritura ===
+    // ==========================================
+    // OPERACIONES DE ESCRITURA Y ACTUALIZACIÓN
+    // ==========================================
 
     public ActividadGrupo insertar(ActividadGrupo a) throws SQLException {
         String sql = """
                 INSERT INTO actividad_grupo (grupo_id, unidad_id, nombre, ponderacion)
-                VALUES (?, ?, ?, ?)
-                RETURNING id
+                VALUES (?, ?, ?, ?) RETURNING id
                 """;
         try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -134,15 +136,8 @@ public class ActividadGrupoDAO {
         return a;
     }
 
-
-    // === Actualización ===
-
     public void actualizar(ActividadGrupo a) throws SQLException {
-        String sql = """
-                UPDATE actividad_grupo
-                SET nombre = ?, ponderacion = ?
-                WHERE id = ?
-                """;
+        String sql = "UPDATE actividad_grupo SET nombre = ?, ponderacion = ? WHERE id = ?";
         try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, a.getNombre());
@@ -152,8 +147,9 @@ public class ActividadGrupoDAO {
         }
     }
 
-
-    // === Eliminación ===
+    // ==========================================
+    // OPERACIONES DE ELIMINACIÓN
+    // ==========================================
 
     public void eliminar(int id) throws SQLException {
         String sql = "DELETE FROM actividad_grupo WHERE id = ?";

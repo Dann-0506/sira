@@ -5,10 +5,17 @@ import com.academico.model.Bonus;
 import java.sql.SQLException;
 import java.util.Optional;
 
+/**
+ * Servicio CRUD para la gestión de Puntos Extra (Bonus).
+ * Responsabilidad: Consultar y asignar puntos adicionales a nivel de unidad o materia completa.
+ */
 public class BonusService {
+    
+    // === DEPENDENCIAS ===
     private final BonusDAO bonusDAO;
 
-    public BonusService(){
+    // === CONSTRUCTORES ===
+    public BonusService() {
         this.bonusDAO = new BonusDAO();
     }
 
@@ -16,19 +23,27 @@ public class BonusService {
         this.bonusDAO = bonusDAO;
     }
 
+    // ==========================================
+    // OPERACIONES DE LECTURA
+    // ==========================================
+
     public Optional<Bonus> obtenerBonusUnidad(int inscripcionId, int unidadId) throws Exception {
+        if (inscripcionId <= 0 || unidadId <= 0) return Optional.empty();
+        
         try {
             return bonusDAO.findByInscripcionYUnidad(inscripcionId, unidadId);
         } catch (SQLException e) {
-            throw new Exception("Error al consultar bonus de unidad.");
+            throw new Exception("Error al consultar los puntos extra de la unidad.");
         }
     }
 
     public Optional<Bonus> obtenerBonusMateria(int inscripcionId) throws Exception {
+        if (inscripcionId <= 0) return Optional.empty();
+
         try {
             return bonusDAO.findBonusMateria(inscripcionId);
         } catch (SQLException e) {
-            throw new Exception("Error al consultar bonus de materia.");
+            throw new Exception("Error al consultar los puntos extra de la materia.");
         }
     }
 }

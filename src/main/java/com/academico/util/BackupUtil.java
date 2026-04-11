@@ -3,11 +3,20 @@ package com.academico.util;
 import io.github.cdimascio.dotenv.Dotenv;
 import java.io.IOException;
 
+/**
+ * Utilería para la gestión de respaldos de la base de datos.
+ * Responsabilidad: Interactuar con el sistema operativo para invocar
+ * las herramientas nativas de PostgreSQL de forma segura.
+ */
 public class BackupUtil {
 
-    public static boolean crearRespaldoAuto(String rutaDestino) {
+    // ==========================================
+    // MÉTODOS DE RESPALDO
+    // ==========================================
+
+    public static void crearRespaldoAuto(String rutaDestino) throws Exception {
         Dotenv dotenv = Dotenv.load();
-        return crearRespaldo(
+        crearRespaldo(
             dotenv.get("DB_HOST"),
             dotenv.get("DB_PORT"),
             dotenv.get("DB_USER"),
@@ -17,13 +26,12 @@ public class BackupUtil {
         );
     }
 
-    public static boolean crearRespaldo(String host, String puerto, String usuario, 
-                                        String password, String nombreBd, String rutaDestino) {
+    public static void crearRespaldo(String host, String puerto, String usuario, 
+                                     String password, String nombreBd, String rutaDestino) throws Exception {
         try {
             // VERIFICACIÓN DE HERRAMIENTA (Prevención de errores)
             if (!comandoExiste("pg_dump")) {
-                System.err.println("Error: 'pg_dump' no está instalado o no está en el PATH.");
-                return false;
+                throw new Exception("Error crítico: 'pg_dump' no está instalado o no está en las variables de entorno (PATH).");
             }
 
             ProcessBuilder pb = new ProcessBuilder(
@@ -33,13 +41,20 @@ public class BackupUtil {
 
             pb.environment().put("PGPASSWORD", password);
             Process proceso = pb.start();
-            return proceso.waitFor() == 0;
+            
+            int exitCode = proceso.waitFor();
+            if (exitCode != 0) {
+                throw new Exception("El proceso de PostgreSQL falló con el código de error: " + exitCode);
+            }
             
         } catch (IOException | InterruptedException e) {
-            System.err.println("Error en respaldo: " + e.getMessage());
-            return false;
+            throw new Exception("Error inesperado al intentar generar el respaldo: " + e.getMessage());
         }
     }
+
+    // ==========================================
+    // VALIDACIONES DEL SISTEMA
+    // ==========================================
 
     private static boolean comandoExiste(String comando) {
         try {

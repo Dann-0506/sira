@@ -7,22 +7,28 @@ import com.academico.service.individuals.InscripcionService;
 import com.academico.service.individuals.MaestroService;
 import com.academico.service.individuals.MateriaService;
 import com.academico.util.CsvUtil;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Orquestador de carga masiva. 
- * Su función es procesar archivos CSV y delegar el guardado a los servicios correspondientes.
+ * Orquestador de Carga Masiva. 
+ * Responsabilidad: Parsear archivos CSV, validar estructura base y delegar 
+ * las reglas de negocio a los servicios individuales de cada entidad.
  */
 public class CargaDatosService {
 
-    // Dependencias de Servicios (Orquestación)
+    // === DEPENDENCIAS DE SERVICIOS ===
     private final AlumnoService alumnoService;
     private final MateriaService materiaService;
     private final MaestroService maestroService;
     private final GrupoService grupoService;
     private final InscripcionService inscripcionService;
+
+    // ==========================================
+    // CONSTRUCTORES (Inyección de dependencias)
+    // ==========================================
 
     public CargaDatosService() {
         this.alumnoService = new AlumnoService();
@@ -32,8 +38,9 @@ public class CargaDatosService {
         this.inscripcionService = new InscripcionService();
     }
 
-    public CargaDatosService(AlumnoService alumnoService, MateriaService materiaService, MaestroService maestroService,
-                             GrupoService grupoService, InscripcionService inscripcionService) {
+    public CargaDatosService(AlumnoService alumnoService, MateriaService materiaService, 
+                             MaestroService maestroService, GrupoService grupoService, 
+                             InscripcionService inscripcionService) {
         this.alumnoService = alumnoService;
         this.materiaService = materiaService;
         this.maestroService = maestroService;
@@ -41,34 +48,43 @@ public class CargaDatosService {
         this.inscripcionService = inscripcionService;
     }
 
-    // === IMPORTACIÓN DE ALUMNOS ===
+    // ==========================================
+    // MÉTODOS DE IMPORTACIÓN MASIVA
+    // ==========================================
+
     public List<String> importarAlumnosCsv(InputStream is) {
         List<String> errores = new ArrayList<>();
         try {
             List<String[]> lineas = CsvUtil.leerCsv(is);
             for (int i = 0; i < lineas.size(); i++) {
                 String[] fila = lineas.get(i);
-                if (fila.length < 2) continue;
+
+                if (i == 0 && esEncabezado(fila, "matricula", "mat", "alumno")) continue;
+
+                if (fila.length < 2) {
+                    errores.add("Línea " + (i + 1) + ": Faltan columnas obligatorias (Matrícula, Nombre).");
+                    continue;
+                }
 
                 try {
                     Alumno a = new Alumno();
                     a.setMatricula(fila[0].trim());
                     a.setNombre(fila[1].trim());
-                    if (fila.length >= 3) a.setEmail(fila[2].trim());
+                    if (fila.length >= 3 && !fila[2].trim().isEmpty()) {
+                        a.setEmail(fila[2].trim());
+                    }
                     
-                    // Delega al servicio la validación y guardado
                     alumnoService.guardar(a, false); 
                 } catch (Exception e) {
                     errores.add("Línea " + (i + 1) + ": " + e.getMessage());
                 }
             }
         } catch (Exception e) {
-            errores.add("Error crítico al leer el archivo de alumnos: " + e.getMessage());
+            errores.add("Error crítico al procesar el archivo de alumnos.");
         }
         return errores;
     }
 
-    // === IMPORTACIÓN DE MATERIAS ===
     public List<String> importarMateriasCsv(InputStream is) {
         List<String> errores = new ArrayList<>();
         try {
@@ -76,13 +92,10 @@ public class CargaDatosService {
             for (int i = 0; i < lineas.size(); i++) {
                 String[] fila = lineas.get(i);
                 
-                // 1. Detección automática para saltar el encabezado
-                if (i == 0 && (fila[0].toLowerCase().contains("clave") || fila[1].toLowerCase().contains("nombre"))) {
-                    continue; 
-                }
+                if (i == 0 && esEncabezado(fila, "clave", "materia")) continue;
 
                 if (fila.length < 3) {
-                    errores.add("Línea " + (i + 1) + ": Faltan columnas.");
+                    errores.add("Línea " + (i + 1) + ": Faltan columnas obligatorias (Clave, Nombre, Unidades).");
                     continue;
                 }
 
@@ -92,7 +105,6 @@ public class CargaDatosService {
                     m.setNombre(fila[1].trim());
                     m.setTotalUnidades(Integer.parseInt(fila[2].trim()));
 
-                    // 2. Le pasamos 'false' para indicarle al servicio que es una materia nueva
                     materiaService.guardar(m, false); 
                 } catch (NumberFormatException e) {
                     errores.add("Línea " + (i + 1) + ": El total de unidades debe ser un número entero.");
@@ -101,12 +113,11 @@ public class CargaDatosService {
                 }
             }
         } catch (Exception e) {
-            errores.add("Error crítico al leer el archivo de materias.");
+            errores.add("Error crítico al procesar el archivo de materias.");
         }
         return errores;
     }
 
-    // === IMPORTACIÓN DE MAESTROS ===
     public List<String> importarMaestrosCsv(InputStream is) {
         List<String> errores = new ArrayList<>();
         try {
@@ -114,23 +125,20 @@ public class CargaDatosService {
             for (int i = 0; i < lineas.size(); i++) {
                 String[] fila = lineas.get(i);
                 
-                // 1. Detección automática de encabezado (Se salta la fila 1 si parece título)
-                if (i == 0 && (fila[0].toLowerCase().contains("num") || fila[0].toLowerCase().contains("empleado"))) {
-                    continue; 
-                }
+                if (i == 0 && esEncabezado(fila, "num", "empleado", "id")) continue;
 
-                // 2. Validación de estructura (Mínimo Identificador y Nombre)
                 if (fila.length < 2) {
-                    errores.add("Línea " + (i + 1) + ": Faltan columnas obligatorias.");
+                    errores.add("Línea " + (i + 1) + ": Faltan columnas obligatorias (Num Empleado, Nombre).");
                     continue;
                 }
 
                 try {
                     Maestro m = new Maestro();
-                    // Nuevo estándar: ID, NOMBRE, EMAIL
                     m.setNumEmpleado(fila[0].trim());
                     m.setNombre(fila[1].trim());
-                    if (fila.length >= 3) m.setEmail(fila[2].trim());
+                    if (fila.length >= 3 && !fila[2].trim().isEmpty()) {
+                        m.setEmail(fila[2].trim());
+                    }
 
                     maestroService.guardar(m, false);
                 } catch (Exception e) {
@@ -138,19 +146,24 @@ public class CargaDatosService {
                 }
             }
         } catch (Exception e) {
-            errores.add("Error crítico: El archivo no tiene un formato CSV válido.");
+            errores.add("Error crítico al procesar el archivo de docentes.");
         }
         return errores;
     }
 
-    // === IMPORTACIÓN DE GRUPOS ===
     public List<String> importarGruposCsv(InputStream is) {
         List<String> errores = new ArrayList<>();
         try {
             List<String[]> lineas = CsvUtil.leerCsv(is);
             for (int i = 0; i < lineas.size(); i++) {
                 String[] fila = lineas.get(i);
-                if (fila.length < 4) continue;
+                
+                if (i == 0 && esEncabezado(fila, "materia", "id")) continue;
+
+                if (fila.length < 4) {
+                    errores.add("Línea " + (i + 1) + ": Faltan columnas obligatorias.");
+                    continue;
+                }
 
                 try {
                     Grupo g = new Grupo();
@@ -161,24 +174,31 @@ public class CargaDatosService {
                     g.setActivo(true);
 
                     grupoService.guardar(g);
+                } catch (NumberFormatException e) {
+                    errores.add("Línea " + (i + 1) + ": Los IDs de materia y docente deben ser números.");
                 } catch (Exception e) {
                     errores.add("Línea " + (i + 1) + ": " + e.getMessage());
                 }
             }
         } catch (Exception e) {
-            errores.add("Error crítico al leer el archivo de grupos.");
+            errores.add("Error crítico al procesar el archivo de grupos.");
         }
         return errores;
     }
 
-    // === IMPORTACIÓN DE INSCRIPCIONES ===
     public List<String> importarInscripcionesCsv(InputStream is) {
         List<String> errores = new ArrayList<>();
         try {
             List<String[]> lineas = CsvUtil.leerCsv(is);
             for (int i = 0; i < lineas.size(); i++) {
                 String[] fila = lineas.get(i);
-                if (fila.length < 2) continue;
+                
+                if (i == 0 && esEncabezado(fila, "alumno", "id")) continue;
+
+                if (fila.length < 2) {
+                    errores.add("Línea " + (i + 1) + ": Faltan columnas obligatorias.");
+                    continue;
+                }
 
                 try {
                     Inscripcion ins = new Inscripcion();
@@ -186,13 +206,34 @@ public class CargaDatosService {
                     ins.setGrupoId(Integer.parseInt(fila[1].trim()));
 
                     inscripcionService.inscribir(ins);
+                } catch (NumberFormatException e) {
+                    errores.add("Línea " + (i + 1) + ": Los IDs de alumno y grupo deben ser números.");
                 } catch (Exception e) {
                     errores.add("Línea " + (i + 1) + ": " + e.getMessage());
                 }
             }
         } catch (Exception e) {
-            errores.add("Error crítico al leer el archivo de inscripciones.");
+            errores.add("Error crítico al procesar el archivo de inscripciones.");
         }
         return errores;
+    }
+
+    // ==========================================
+    // MÉTODOS UTILITARIOS
+    // ==========================================
+
+    /**
+     * Verifica si una fila de CSV es probablemente un encabezado analizando su primera celda.
+     */
+    private boolean esEncabezado(String[] fila, String... palabrasClave) {
+        if (fila == null || fila.length == 0 || fila[0] == null) return false;
+        
+        String primeraCelda = fila[0].trim().toLowerCase();
+        for (String palabra : palabrasClave) {
+            if (primeraCelda.contains(palabra.toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

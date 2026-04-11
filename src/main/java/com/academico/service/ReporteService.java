@@ -13,17 +13,22 @@ import java.util.List;
 
 /**
  * Servicio Orquestador de Reportes.
- * Reúne datos de múltiples servicios para generar cálculos académicos complejos.
+ * Responsabilidad: Reunir datos de múltiples servicios para generar 
+ * cálculos académicos complejos y vistas consolidadas.
  */
 public class ReporteService {
 
-    // Dependencias de Servicios (Arquitectura de Capas)
+    // === DEPENDENCIAS DE SERVICIOS ===
     private final AlumnoService alumnoService;
     private final InscripcionService inscripcionService;
     private final UnidadService unidadService;
     private final BonusService bonusService;
     private final CalificacionService calificacionService;
     private final ResultadoService resultadoService;
+
+    // ==========================================
+    // CONSTRUCTORES
+    // ==========================================
 
     public ReporteService() {
         this.alumnoService = new AlumnoService();
@@ -44,62 +49,78 @@ public class ReporteService {
         this.resultadoService = resultadoService;
     }
 
+    // ==========================================
+    // GENERACIÓN DE REPORTES
+    // ==========================================
+
     /**
      * Genera el desglose completo de calificaciones de un grupo.
      * @param grupoId ID del grupo a consultar.
      * @return Lista de CalificacionFinal con el detalle por alumno y unidad.
-     * @throws Exception Si ocurre un error en cualquiera de los servicios de consulta.
      */
     public List<CalificacionFinal> generarReporteFinalGrupo(int grupoId) throws Exception {
-        List<CalificacionFinal> reporteGrupo = new ArrayList<>();
-        
-        // 1. Obtener la estructura del grupo (Inscritos y Unidades)
-        List<Inscripcion> inscripciones = inscripcionService.listarPorGrupo(grupoId);
-        List<Unidad> unidades = unidadService.listarPorGrupo(grupoId);
-
-        for (Inscripcion inscripcion : inscripciones) {
+        try {
+            List<CalificacionFinal> reporteGrupo = new ArrayList<>();
             
-            // 2. Obtener datos del alumno mediante su servicio
-            Alumno alumno = alumnoService.buscarPorId(inscripcion.getAlumnoId());
-            
-            List<ResultadoUnidad> resultadosUnidades = new ArrayList<>();
+            // 1. Obtener la estructura general del grupo
+            List<Inscripcion> inscripciones = inscripcionService.listarPorGrupo(grupoId);
+            List<Unidad> unidades = unidadService.listarPorGrupo(grupoId);
 
-            // 3. Procesar cada unidad académica
-            for (Unidad unidad : unidades) {
-                // Consultar calificaciones mediante el servicio de resultados
-                List<Resultado> resultados = resultadoService.buscarPorInscripcionYUnidad(
-                        inscripcion.getId(), unidad.getId());
-                
-                // Consultar puntos extra mediante el servicio de bonus
-                BigDecimal puntosExtra = bonusService.obtenerBonusUnidad(inscripcion.getId(), unidad.getId())
-                        .map(Bonus::getPuntos)
-                        .orElse(BigDecimal.ZERO);
-
-                // Calcular el desempeño de la unidad
-                ResultadoUnidad ru = calificacionService.calcularResultadoUnidad(
-                        inscripcion.getId(), unidad, resultados, puntosExtra);
-                
-                resultadosUnidades.add(ru);
+            // 2. Procesar el reporte individual de cada alumno
+            for (Inscripcion inscripcion : inscripciones) {
+                CalificacionFinal calificacionAlumno = procesarCalificacionAlumno(inscripcion, unidades);
+                reporteGrupo.add(calificacionAlumno);
             }
 
-            // 4. Consultar bonus global de la materia
-            BigDecimal extraMateria = bonusService.obtenerBonusMateria(inscripcion.getId())
-                    .map(Bonus::getPuntos)
-                    .orElse(BigDecimal.ZERO);
+            return reporteGrupo;
 
-            // 5. Generar el cálculo final (delegado al servicio de lógica pura)
-            CalificacionFinal calificacionFinal = calificacionService.calcularCalificacionFinal(
-                    inscripcion.getId(), 
-                    alumno, 
-                    resultadosUnidades, 
-                    extraMateria, 
-                    inscripcion.getCalificacionFinalOverride(), 
-                    inscripcion.getOverrideJustificacion()
-            );
+        } catch (Exception e) {
+            throw new Exception("Error al generar el reporte del grupo: " + e.getMessage());
+        }
+    }
 
-            reporteGrupo.add(calificacionFinal);
+    // ==========================================
+    // MÉTODOS AUXILIARES (Orquestación Interna)
+    // ==========================================
+
+    /**
+     * Orquesta el cálculo de todas las unidades y bonus para un solo alumno.
+     */
+    private CalificacionFinal procesarCalificacionAlumno(Inscripcion inscripcion, List<Unidad> unidades) throws Exception {
+        Alumno alumno = alumnoService.buscarPorId(inscripcion.getAlumnoId());
+        List<ResultadoUnidad> resultadosUnidades = new ArrayList<>();
+
+        // Procesar cada unidad académica delegando al método auxiliar
+        for (Unidad unidad : unidades) {
+            resultadosUnidades.add(procesarResultadoUnidad(inscripcion.getId(), unidad));
         }
 
-        return reporteGrupo;
+        // Consultar si el alumno tiene puntos extra globales en la materia
+        BigDecimal extraMateria = bonusService.obtenerBonusMateria(inscripcion.getId())
+                .map(Bonus::getPuntos)
+                .orElse(BigDecimal.ZERO);
+
+        // Delegar el cálculo matemático final
+        return calificacionService.calcularCalificacionFinal(
+                inscripcion.getId(), 
+                alumno, 
+                resultadosUnidades, 
+                extraMateria, 
+                inscripcion.getCalificacionFinalOverride(), 
+                inscripcion.getOverrideJustificacion()
+        );
+    }
+
+    /**
+     * Orquesta la búsqueda de calificaciones y bonus para una sola unidad académica.
+     */
+    private ResultadoUnidad procesarResultadoUnidad(int inscripcionId, Unidad unidad) throws Exception {
+        List<Resultado> resultados = resultadoService.buscarPorInscripcionYUnidad(inscripcionId, unidad.getId());
+        
+        BigDecimal puntosExtra = bonusService.obtenerBonusUnidad(inscripcionId, unidad.getId())
+                .map(Bonus::getPuntos)
+                .orElse(BigDecimal.ZERO);
+
+        return calificacionService.calcularResultadoUnidad(inscripcionId, unidad, resultados, puntosExtra);
     }
 }

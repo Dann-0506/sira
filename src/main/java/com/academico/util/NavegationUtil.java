@@ -1,5 +1,6 @@
 package com.academico.util;
 
+import com.academico.MainApp;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -7,14 +8,18 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.net.URL;
 
-import com.academico.MainApp;
-
+/**
+ * Utilería para la Navegación y Control de Vistas (JavaFX).
+ * Responsabilidad: Centralizar las rutas FXML, inyectar vistas en el contenedor
+ * principal y gestionar los títulos de las ventanas.
+ */
 public class NavegationUtil {
 
+    // === RUTAS DEL SISTEMA ===
     public static final String LOGIN          = "/com/academico/ui/login.fxml";
     public static final String DASHBOARD      = "/com/academico/ui/dashboard.fxml";
     public static final String ADMINS         = "/com/academico/ui/admins.fxml";
@@ -49,14 +54,13 @@ public class NavegationUtil {
         TITULOS.put(PERFIL,         "Mi Perfil");
     }
 
-    /**
-     * Reemplaza la escena completa de la ventana principal.
-     * Usado para login ↔ dashboard.
-     */
+    // ==========================================
+    // MÉTODOS DE NAVEGACIÓN
+    // ==========================================
+
     public static void irA(String ruta) {
         try {
-            FXMLLoader loader = new FXMLLoader(
-                NavegationUtil.class.getResource(ruta));
+            FXMLLoader loader = new FXMLLoader(NavegationUtil.class.getResource(ruta));
             Scene scene = new Scene(loader.load());
 
             String titulo = TITULOS.getOrDefault(ruta, "Registro Académico");
@@ -64,39 +68,28 @@ public class NavegationUtil {
             MainApp.getPrimaryStage().setScene(scene);
 
         } catch (IOException e) {
-            throw new RuntimeException("No se pudo cargar la vista: " + ruta, e);
+            throw new RuntimeException("No se pudo cargar la vista principal: " + ruta, e);
         }
     }
 
-    /**
-     * Carga una vista dentro del área principal del dashboard.
-     */
     public static void cargarEnArea(StackPane area, String ruta) {
         try {
             URL url = NavegationUtil.class.getResource(ruta);
-            if (url == null) {
-                throw new Exception("No se encontró el archivo FXML en: " + ruta);
-            }
+            if (url == null) throw new Exception("No se encontró el archivo FXML.");
 
             FXMLLoader loader = new FXMLLoader(url);
             Node vista = loader.load();
             area.getChildren().setAll(vista);
 
         } catch (Exception e) {
-            System.err.println("ERROR DE NAVEGACIÓN: " + e.getMessage());
-            Label errorLabel = new Label("No se pudo cargar la vista seleccionada.");
-            errorLabel.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+            Label errorLabel = new Label("⚠ Error al cargar la vista seleccionada.\n" + e.getMessage());
+            errorLabel.setStyle("-fx-text-fill: #721c24; -fx-background-color: #f8d7da; -fx-padding: 20; -fx-background-radius: 10; -fx-font-weight: bold;");
             area.getChildren().setAll(errorLabel);
         }
     }
 
-    /**
-     * Versión que devuelve el FXMLLoader para acceder al controlador
-     * de la vista cargada y pasarle datos.
-     */
     public static FXMLLoader cargarEnAreaConLoader(StackPane area, String ruta) throws IOException {
-        FXMLLoader loader = new FXMLLoader(
-            NavegationUtil.class.getResource(ruta));
+        FXMLLoader loader = new FXMLLoader(NavegationUtil.class.getResource(ruta));
         Node vista = loader.load();
         area.getChildren().setAll(vista);
         return loader;

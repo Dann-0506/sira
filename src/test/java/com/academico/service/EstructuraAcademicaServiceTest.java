@@ -13,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.sql.SQLException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -41,43 +40,55 @@ class EstructuraAcademicaServiceTest {
     }
 
     @Test
-    @DisplayName("Debe permitir agregar si la suma total es <= 100")
-    void testPuedeAgregarActividad_Exito() throws SQLException {
-        // Simular que la base de datos dice que actualmente hay 50% registrado
+    @DisplayName("Debe guardar la actividad si la suma de ponderaciones es <= 100")
+    void testGuardarActividad_Exito() throws Exception {
+        // Preparar: Simular que actualmente hay 50% registrado en la base de datos
         when(actividadDAO.sumaPonderaciones(1, 1)).thenReturn(new BigDecimal("50.00"));
+        // Simular que el DAO devuelve la actividad guardada con un ID asignado
+        when(actividadDAO.insertar(any())).thenReturn(actividadPrueba);
 
-        // Intentar agregar 30% más (Total 80%)
-        boolean resultado = estructuraService.puedeAgregarActividad(1, 1, new BigDecimal("30.00"));
+        // Ejecutar
+        ActividadGrupo resultado = estructuraService.guardarActividad(actividadPrueba);
 
-        assertTrue(resultado, "Debería permitir agregar porque 50 + 30 <= 100");
+        // Verificar: Asegurar que el DAO sí fue llamado y no se lanzó ninguna excepción
+        assertNotNull(resultado, "Debería devolver la actividad guardada");
+        verify(actividadDAO, times(1)).insertar(actividadPrueba);
     }
 
     @Test
-    @DisplayName("Debe rechazar si la suma total excede 100")
-    void testPuedeAgregarActividad_FallaExcede100() throws SQLException {
-        // Simular que la base de datos dice que actualmente hay 80% registrado
+    @DisplayName("Debe rechazar el guardado si la suma excede 100")
+    void testGuardarActividad_FallaExcede100() throws Exception { // Se actualizó a Exception
+        // Preparar: Simular que actualmente hay 80% registrado (80 + 30 = 110%)
         when(actividadDAO.sumaPonderaciones(1, 1)).thenReturn(new BigDecimal("80.00"));
 
-        // Intentar agregar 30% más (Total 110%)
-        boolean resultado = estructuraService.puedeAgregarActividad(1, 1, new BigDecimal("30.00"));
+        // Ejecutar y Verificar: Comprobar que se lance la excepción genérica con nuestro mensaje
+        Exception exception = assertThrows(Exception.class, () -> {
+            estructuraService.guardarActividad(actividadPrueba);
+        });
 
-        assertFalse(resultado, "Debería rechazar porque 80 + 30 > 100");
+        assertEquals("Error: La suma de las ponderaciones de esta unidad excedería el 100%.", exception.getMessage());
+        
+        // Confirmar que el intento de insertar nunca llegó a la base de datos
+        verify(actividadDAO, never()).insertar(any());
     }
 
     @Test
     @DisplayName("Debe lanzar excepción si se intenta guardar en una unidad cerrada")
-    void testGuardarActividad_FallaUnidadCerrada() throws SQLException {
-        // Simular que la unidad está cerrada 
-        doThrow(new IllegalStateException("Unidad cerrada."))
+    void testGuardarActividad_FallaUnidadCerrada() throws Exception { // Se actualizó a Exception
+        // Preparar: Simular que el servicio de estado bloquea la operación con el NUEVO mensaje
+        doThrow(new IllegalStateException("Acción no permitida: La unidad ya ha sido cerrada."))
                 .when(estadoUnidadService).validarUnidadAbierta(1, 1);
 
-        // Verificar que al intentar guardar, la excepción suba y detenga todo
+        // Ejecutar y Verificar: Comprobar que detenga la ejecución inmediatamente
         IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
             estructuraService.guardarActividad(actividadPrueba);
         });
 
-        assertEquals("Unidad cerrada.", exception.getMessage());
+        // Aseguramos que el mensaje esperado es exactamente el mismo que lanza el servicio
+        assertEquals("Acción no permitida: La unidad ya ha sido cerrada.", exception.getMessage());
         
+        // Confirmar que no llegó ni a validar matemáticas ni a insertar en la BD
+        verify(actividadDAO, never()).sumaPonderaciones(anyInt(), anyInt());
         verify(actividadDAO, never()).insertar(any());
     }
 }

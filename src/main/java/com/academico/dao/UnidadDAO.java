@@ -8,9 +8,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Objeto de Acceso a Datos (DAO) para Unidades Académicas.
+ * Controla el temario asociado a materias y su visualización en grupos.
+ */
 public class UnidadDAO {
 
-    // === Mapeo de ResultSet a Unidad ===
+    // ==========================================
+    // MAPEO DE RESULTADOS
+    // ==========================================
 
     private Unidad mapear(ResultSet rs) throws SQLException {
         Unidad u = new Unidad();
@@ -21,7 +27,9 @@ public class UnidadDAO {
         return u;
     }
 
-    // === Consultas ===
+    // ==========================================
+    // OPERACIONES DE LECTURA
+    // ==========================================
 
     public Optional<Unidad> findById(int id) throws SQLException {
         String sql = "SELECT * FROM unidad WHERE id = ?";
@@ -47,7 +55,24 @@ public class UnidadDAO {
             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, grupoId);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) lista.add(mapear(rs));
+                while (rs.next()) {
+                    lista.add(mapear(rs));
+                }
+            }
+        }
+        return lista;
+    }
+
+    public List<Unidad> findByMateria(int materiaId) throws SQLException {
+        String sql = "SELECT * FROM unidad WHERE materia_id = ? ORDER BY numero";
+        List<Unidad> lista = new ArrayList<>();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, materiaId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(mapear(rs));
+                }
             }
         }
         return lista;
@@ -59,12 +84,16 @@ public class UnidadDAO {
         try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) lista.add(mapear(rs));
+            while (rs.next()) {
+                lista.add(mapear(rs));
+            }
         }
         return lista;
     }
 
-    // === Escritura ===
+    // ==========================================
+    // OPERACIONES DE ESCRITURA Y ACTUALIZACIÓN
+    // ==========================================
 
     public void insertar(Unidad u) throws SQLException {
         String sql = "INSERT INTO unidad (materia_id, numero, nombre) VALUES (?, ?, ?)";
@@ -76,8 +105,6 @@ public class UnidadDAO {
             ps.executeUpdate();
         }
     }
-
-    // === Actualización ===
 
     public void actualizar(Unidad u) throws SQLException {
         String sql = "UPDATE unidad SET materia_id = ?, numero = ?, nombre = ? WHERE id = ?";
@@ -91,43 +118,25 @@ public class UnidadDAO {
         }
     }
 
-    // === Eliminación ===
-
-    public void eliminar(int id) throws SQLException {
-        String sql = "DELETE FROM unidad WHERE id = ?";
-        try (Connection conn = DatabaseManagerUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            ps.executeUpdate();
-        }
-    }
-
-    public List<Unidad> findByMateria(int materiaId) throws SQLException {
-        String sql = "SELECT * FROM unidad WHERE materia_id = ? ORDER BY numero";
-        List<Unidad> lista = new ArrayList<>();
-        try (Connection conn = DatabaseManagerUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, materiaId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Unidad u = new Unidad();
-                    u.setId(rs.getInt("id"));
-                    u.setMateriaId(rs.getInt("materia_id"));
-                    u.setNumero(rs.getInt("numero"));
-                    u.setNombre(rs.getString("nombre"));
-                    lista.add(u);
-                }
-            }
-        }
-        return lista;
-    }
-
     public void actualizarNombre(int id, String nombre) throws SQLException {
         String sql = "UPDATE unidad SET nombre = ? WHERE id = ?";
         try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, nombre);
             ps.setInt(2, id);
+            ps.executeUpdate();
+        }
+    }
+
+    // ==========================================
+    // OPERACIONES DE ELIMINACIÓN
+    // ==========================================
+
+    public void eliminar(int id) throws SQLException {
+        String sql = "DELETE FROM unidad WHERE id = ?";
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
             ps.executeUpdate();
         }
     }
