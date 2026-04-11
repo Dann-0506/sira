@@ -8,9 +8,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Objeto de Acceso a Datos (DAO) para Grupos.
+ * Gestiona la vinculación entre materias, maestros y la definición de semestres.
+ */
 public class GrupoDAO {
 
-    // === Mapeo de ResultSet a Grupo ===
+    // ==========================================
+    // MAPEO DE RESULTADOS
+    // ==========================================
 
     private Grupo mapear(ResultSet rs) throws SQLException {
         Grupo g = new Grupo();
@@ -20,13 +26,16 @@ public class GrupoDAO {
         g.setClave(rs.getString("clave"));
         g.setSemestre(rs.getString("semestre"));
         g.setActivo(rs.getBoolean("activo"));
+        
         try { g.setMateriaNombre(rs.getString("materia_nombre")); } catch (SQLException ignored) {}
         try { g.setMaestroNombre(rs.getString("maestro_nombre")); } catch (SQLException ignored) {}
+        
         return g;
     }
 
-
-    // === Consulta ===
+    // ==========================================
+    // OPERACIONES DE LECTURA
+    // ==========================================
 
     public Optional<Grupo> findById(int id) throws SQLException {
         String sql = """
@@ -91,8 +100,9 @@ public class GrupoDAO {
         return lista;
     }
 
-
-    // === Escritura ===
+    // ==========================================
+    // OPERACIONES DE ESCRITURA Y TRANSACCIONES
+    // ==========================================
 
     public Grupo insertar(Grupo g) throws SQLException {
         String sql = """
@@ -108,8 +118,9 @@ public class GrupoDAO {
             ps.setString(4, g.getSemestre());
             ps.setBoolean(5, g.isActivo());
             try (ResultSet rs = ps.executeQuery()) {
-                rs.next();
-                g.setId(rs.getInt("id"));
+                if (rs.next()) {
+                    g.setId(rs.getInt("id"));
+                }
             }
         }
         return g;
@@ -131,7 +142,9 @@ public class GrupoDAO {
                     ps.setString(3, g.getClave());
                     ps.setString(4, g.getSemestre());
                     ps.setBoolean(5, g.isActivo());
-                    if (ps.executeUpdate() == 0) duplicados.add(g.getClave());
+                    if (ps.executeUpdate() == 0) {
+                        duplicados.add(g.getClave());
+                    }
                 }
                 conn.commit();
             } catch (SQLException e) {
@@ -144,8 +157,9 @@ public class GrupoDAO {
         return duplicados;
     }
 
-
-    // === Actualización ===
+    // ==========================================
+    // OPERACIONES DE ACTUALIZACIÓN
+    // ==========================================
 
     public void actualizar(Grupo g) throws SQLException {
         String sql = """
