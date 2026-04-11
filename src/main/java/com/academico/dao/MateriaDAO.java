@@ -8,7 +8,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Objeto de Acceso a Datos (DAO) para Materias.
+ * Gestiona el catálogo de asignaturas y la definición del total de unidades por materia.
+ */
 public class MateriaDAO {
+
+    // ==========================================
+    // MAPEO DE RESULTADOS
+    // ==========================================
 
     private Materia mapear(ResultSet rs) throws SQLException {
         return new Materia(
@@ -18,6 +26,10 @@ public class MateriaDAO {
                 rs.getInt("total_unidades")
         );
     }
+
+    // ==========================================
+    // OPERACIONES DE LECTURA
+    // ==========================================
 
     public Optional<Materia> findById(int id) throws SQLException {
         String sql = "SELECT * FROM materia WHERE id = ?";
@@ -36,10 +48,16 @@ public class MateriaDAO {
         try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) lista.add(mapear(rs));
+            while (rs.next()) {
+                lista.add(mapear(rs));
+            }
         }
         return lista;
     }
+
+    // ==========================================
+    // OPERACIONES DE ESCRITURA Y ACTUALIZACIÓN
+    // ==========================================
 
     public Materia insertar(Materia m) throws SQLException {
         String sql = "INSERT INTO materia (clave, nombre, total_unidades) VALUES (?, ?, ?)";
@@ -51,9 +69,11 @@ public class MateriaDAO {
             ps.setInt(3, m.getTotalUnidades());
             ps.executeUpdate();
             
-            // Recuperamos el ID generado
+            // Recuperamos el ID generado automáticamente por PostgreSQL
             try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) m.setId(rs.getInt(1));
+                if (rs.next()) {
+                    m.setId(rs.getInt(1));
+                }
             }
         }
         return m;
@@ -70,6 +90,10 @@ public class MateriaDAO {
             ps.executeUpdate();
         }
     }
+
+    // ==========================================
+    // OPERACIONES DE ELIMINACIÓN
+    // ==========================================
 
     public void eliminar(int id) throws SQLException {
         String sql = "DELETE FROM materia WHERE id = ?";
