@@ -96,7 +96,7 @@ public class DashboardMaestroController {
         titulo.getStyleClass().add("sidebar-titulo");
         menuPrincipal.getChildren().add(titulo);
 
-        Button btnMisGrupos = crearBotonMenu("Mis Grupos", null);
+        Button btnMisGrupos = crearBotonMenu("Mis Grupos Asignados", null);
         
         btnMisGrupos.setOnAction(e -> {
             actualizarBotonActivo(btnMisGrupos);
