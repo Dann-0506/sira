@@ -22,6 +22,7 @@ public class AdminsController {
     @FXML private TableColumn<Usuario, String> colNombre;
     @FXML private TableColumn<Usuario, String> colEmail;
     @FXML private TableColumn<Usuario, Void> colAcciones;
+    @FXML private TableColumn<Usuario, Boolean> colEstado;
     @FXML private Pagination paginacionAdmins;
     @FXML private TextField campoBusqueda;
 
@@ -63,11 +64,32 @@ public class AdminsController {
         colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
 
+        colEstado.setCellValueFactory(new PropertyValueFactory<>("activo"));
+        colEstado.setCellFactory(param -> new TableCell<>() {
+            private final Label lblBadge = new Label();
+            {
+                lblBadge.setStyle("-fx-padding: 3 10; -fx-background-radius: 12; -fx-font-weight: bold; -fx-font-size: 11px;");
+            }
+            @Override
+            protected void updateItem(Boolean activo, boolean empty) {
+                super.updateItem(activo, empty);
+                if (empty || activo == null) {
+                    setGraphic(null);
+                } else {
+                    lblBadge.setText(activo ? "ACTIVO" : "INACTIVO");
+                    lblBadge.setStyle("-fx-padding: 3 10; -fx-background-radius: 12; -fx-font-weight: bold; -fx-font-size: 11px; " + 
+                        (activo ? "-fx-background-color: #d4edda; -fx-text-fill: #155724;" 
+                                : "-fx-background-color: #e2e3e5; -fx-text-fill: #383d41;"));
+                    setGraphic(lblBadge);
+                }
+            }
+        });
+
         colAcciones.setCellFactory(param -> new TableCell<>() {
             private final Button btnEditar = new Button("Editar");
             private final Button btnEstado = new Button(); 
             private final Button btnEliminar = new Button("Eliminar");
-            private final HBox panel = new HBox(8, btnEditar, btnEstado); 
+            private final HBox panel = new HBox(8); 
             
             {
                 btnEditar.getStyleClass().addAll("accent", "flat");
@@ -100,8 +122,7 @@ public class AdminsController {
                     }
 
                     panel.getChildren().clear();
-                    
-                    // VALIDACIÓN DE SEGURIDAD: Evitar auto-bloqueo/eliminación
+
                     if (usuarioLogueado != null && u.getId() == usuarioLogueado.getId()) {
                         Label lblTu = new Label("Eres tú. Edita desde 'Mi Perfil'.");
                         lblTu.setStyle("-fx-text-fill: #6c757d; -fx-font-style: italic; -fx-font-size: 11px;");
@@ -113,6 +134,22 @@ public class AdminsController {
                     setGraphic(panel);
                 }
             }
+        });
+
+        tablaAdmins.setRowFactory(tv -> {
+            TableRow<Usuario> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && (!row.isEmpty()) ) {
+                    Usuario u = row.getItem();
+                    Usuario usuarioLogueado = SessionManagerUtil.getUsuarioActual();
+                    
+                    // Solo abrimos el modal si NO es el usuario que está logueado actualmente
+                    if (usuarioLogueado == null || u.getId() != usuarioLogueado.getId()) {
+                        abrirEdicion(u);
+                    }
+                }
+            });
+            return row;
         });
     }
 

@@ -85,7 +85,6 @@ public class GruposController {
                     setGraphic(null);
                 } else {
                     lblBadge.setText(activo ? "ACTIVO" : "INACTIVO");
-                    // Usamos colores suaves para los badges
                     lblBadge.setStyle(lblBadge.getStyle() + (activo 
                         ? "-fx-background-color: #d4edda; -fx-text-fill: #155724;" 
                         : "-fx-background-color: #e2e3e5; -fx-text-fill: #383d41;"));
@@ -101,7 +100,6 @@ public class GruposController {
             private final HBox panel = new HBox(8, btnEditar, btnEstado, btnEliminar);
 
             {
-                // Usamos las clases de AtlantaFX para que se vean modernos pero con texto
                 btnEditar.getStyleClass().addAll("flat", "accent");
                 btnEstado.getStyleClass().addAll("flat");
                 btnEliminar.getStyleClass().addAll("flat", "danger");
@@ -121,10 +119,8 @@ public class GruposController {
                 } else {
                     Grupo g = getTableView().getItems().get(getIndex());
                     
-                    // Retornamos al texto explícito
                     btnEstado.setText(g.isActivo() ? "Desactivar" : "Activar");
                     
-                    // Mantenemos el cambio de color dinámico
                     btnEstado.getStyleClass().removeAll("success", "warning");
                     btnEstado.getStyleClass().add(g.isActivo() ? "warning" : "success");
                     
