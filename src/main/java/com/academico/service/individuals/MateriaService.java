@@ -33,6 +33,15 @@ public class MateriaService {
     // OPERACIONES DE LECTURA
     // ==========================================
 
+    public Materia buscarPorClave(String clave) throws Exception {
+        try {
+            return materiaDAO.findByClave(clave)
+                .orElseThrow(() -> new Exception("La materia con clave '" + clave + "' no existe."));
+        } catch (SQLException e) {
+            throw new Exception("Error al buscar la materia en la base de datos.");
+        }
+    }
+
     public List<Materia> listarTodas() throws Exception {
         try { 
             return materiaDAO.findAll(); 

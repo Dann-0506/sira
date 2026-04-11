@@ -32,6 +32,16 @@ public class MaestroService {
     // OPERACIONES DE LECTURA
     // ==========================================
 
+    public Maestro buscarPorNumEmpleado(String numEmpleado) throws Exception {
+        try {
+            // Nota: Asume que MaestroDAO ya tiene el método findByNumEmpleado() que hicimos en el paso anterior.
+            return maestroDAO.findByNumEmpleado(numEmpleado)
+                .orElseThrow(() -> new Exception("El docente con número '" + numEmpleado + "' no existe."));
+        } catch (SQLException e) {
+            throw new Exception("Error al buscar al docente en la base de datos.");
+        }
+    }
+
     public List<Maestro> listarTodos() throws Exception {
         try { 
             return maestroDAO.findAll(); 

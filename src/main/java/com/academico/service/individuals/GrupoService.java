@@ -39,8 +39,7 @@ public class GrupoService {
     // OPERACIONES DE ESCRITURA
     // ==========================================
 
-    public void guardar(Grupo grupo) throws Exception {
-        // 1. Validaciones tempranas de negocio
+    public void guardar(Grupo grupo, boolean esEdicion) throws Exception {
         if (grupo.getMateriaId() <= 0 || grupo.getMaestroId() <= 0) {
             throw new IllegalArgumentException("Debe seleccionar una materia y un docente válidos.");
         }
@@ -51,18 +50,47 @@ public class GrupoService {
             throw new IllegalArgumentException("El semestre es obligatorio.");
         }
 
-        // 2. Persistencia segura
         try {
-            grupoDAO.insertar(grupo);
+            if (esEdicion) {
+                grupoDAO.actualizar(grupo);
+            } else {
+                grupoDAO.insertar(grupo);
+            }
         } catch (SQLException e) {
             String state = e.getSQLState();
             if ("23505".equals(state)) {
                 throw new Exception("Error: La clave de grupo ya existe en el sistema.");
             }
             if ("23503".equals(state)) {
-                throw new Exception("Error: La materia o el docente seleccionados no existen o fueron eliminados.");
+                throw new Exception("Error: La materia o el docente seleccionados no existen.");
             }
-            throw new Exception("Error de conexión al intentar crear el grupo.");
+            throw new Exception("Error de conexión al intentar guardar el grupo.");
+        }
+    }
+
+    // ==========================================
+    // OPERACIONES DE ESTADO Y ELIMINACIÓN
+    // ==========================================
+
+    public void cambiarEstado(int id, boolean estado) throws Exception {
+        try {
+            // Obtenemos el grupo primero para actualizar solo el estado
+            Grupo g = grupoDAO.findById(id).orElseThrow(() -> new Exception("Grupo no encontrado."));
+            g.setActivo(estado);
+            grupoDAO.actualizar(g);
+        } catch (SQLException e) {
+            throw new Exception("Error al actualizar el estado del grupo.");
+        }
+    }
+
+    public void eliminar(int id) throws Exception {
+        try {
+            grupoDAO.eliminar(id); 
+        } catch (SQLException e) {
+            if ("23503".equals(e.getSQLState())) {
+                throw new Exception("No se puede eliminar: El grupo ya tiene alumnos inscritos.");
+            }
+            throw new Exception("Error al eliminar el grupo.");
         }
     }
 }

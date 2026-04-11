@@ -65,6 +65,22 @@ public class MaestroDAO {
         }
     }
 
+    public Optional<Maestro> findByNumEmpleado(String numEmpleado) throws SQLException {
+        String sql = """
+                SELECT m.*, u.nombre, u.email, u.activo
+                FROM maestro m
+                JOIN usuario u ON u.id = m.usuario_id
+                WHERE m.num_empleado = ?
+                """;
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, numEmpleado);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? Optional.of(mapear(rs)) : Optional.empty();
+            }
+        }
+    }
+
     public List<Maestro> findAll() throws SQLException {
         String sql = """
                 SELECT m.*, u.nombre, u.email, u.activo

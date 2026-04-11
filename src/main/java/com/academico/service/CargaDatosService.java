@@ -154,28 +154,34 @@ public class CargaDatosService {
     public List<String> importarGruposCsv(InputStream is) {
         List<String> errores = new ArrayList<>();
         try {
-            List<String[]> lineas = CsvUtil.leerCsv(is);
-            for (int i = 0; i < lineas.size(); i++) {
-                String[] fila = lineas.get(i);
+            List<String[]> filas = CsvUtil.leerCsv(is);
+            for (int i = 0; i < filas.size(); i++) {
+                String[] fila = filas.get(i);
                 
-                if (i == 0 && esEncabezado(fila, "materia", "id")) continue;
-
+                if (i == 0 && esEncabezado(fila, "materia", "clave", "docente")) continue;
                 if (fila.length < 4) {
-                    errores.add("Línea " + (i + 1) + ": Faltan columnas obligatorias.");
+                    errores.add("Línea " + (i + 1) + ": Columnas insuficientes.");
                     continue;
                 }
 
                 try {
-                    Grupo g = new Grupo();
-                    g.setMateriaId(Integer.parseInt(fila[0].trim()));
-                    g.setMaestroId(Integer.parseInt(fila[1].trim()));
-                    g.setClave(fila[2].trim());
-                    g.setSemestre(fila[3].trim());
-                    g.setActivo(true);
+                    String claveMateria  = fila[0].trim();
+                    String numEmpleado   = fila[1].trim();
+                    String claveGrupo    = fila[2].trim();
+                    String semestre      = fila[3].trim();
 
-                    grupoService.guardar(g);
-                } catch (NumberFormatException e) {
-                    errores.add("Línea " + (i + 1) + ": Los IDs de materia y docente deben ser números.");
+                    Materia materia = materiaService.buscarPorClave(claveMateria);
+                    Maestro maestro = maestroService.buscarPorNumEmpleado(numEmpleado);
+
+                    Grupo grupo = new Grupo();
+                    grupo.setMateriaId(materia.getId());
+                    grupo.setMaestroId(maestro.getId());
+                    grupo.setClave(claveGrupo);
+                    grupo.setSemestre(semestre);
+                    grupo.setActivo(true);
+
+                    grupoService.guardar(grupo, false);
+
                 } catch (Exception e) {
                     errores.add("Línea " + (i + 1) + ": " + e.getMessage());
                 }
@@ -222,9 +228,6 @@ public class CargaDatosService {
     // MÉTODOS UTILITARIOS
     // ==========================================
 
-    /**
-     * Verifica si una fila de CSV es probablemente un encabezado analizando su primera celda.
-     */
     private boolean esEncabezado(String[] fila, String... palabrasClave) {
         if (fila == null || fila.length == 0 || fila[0] == null) return false;
         
