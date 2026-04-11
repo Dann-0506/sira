@@ -47,6 +47,14 @@ public class ResultadoService {
         }
     }
 
+    public boolean tieneCalificacionesRegistradas(int actividadGrupoId) throws Exception {
+        try {
+            return resultadoDAO.tieneCalificacionesRegistradas(actividadGrupoId);
+        } catch (SQLException e) {
+            throw new Exception("Error al verificar las calificaciones de la actividad.");
+        }
+    }
+
     // ==========================================
     // OPERACIONES DE ESCRITURA
     // ==========================================

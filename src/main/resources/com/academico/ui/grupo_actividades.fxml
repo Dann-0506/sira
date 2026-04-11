@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.academico.controller.GrupoActividadesController">
+
+    <VBox spacing="20" style="-fx-background-color: -color-bg-default; -fx-padding: 30;">
+
+        <VBox spacing="5">
+            <Label text="Rúbrica y Actividades" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+            <Label text="Define las actividades evaluables por unidad. La suma debe ser exactamente 100%." style="-fx-text-fill: #57606a;"/>
+        </VBox>
+
+        <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-background-color: #f6f8fa; -fx-padding: 15; -fx-background-radius: 8; -fx-border-color: #d0d7de; -fx-border-radius: 8;">
+            <Label text="Selecciona la Unidad:" style="-fx-font-weight: bold;"/>
+            <ComboBox fx:id="comboUnidades" prefWidth="250" promptText="-- Elegir Unidad --"/>
+        </HBox>
+
+        <HBox fx:id="panelCaptura" spacing="15" alignment="BOTTOM_LEFT" disable="true">
+            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                <Label text="Nombre de la Actividad (Ej. Examen, Proyecto)"/>
+                <TextField fx:id="campoNombreActividad" promptText="Descripción de lo que se evaluará"/>
+            </VBox>
+            <VBox spacing="5">
+                <Label text="Valor (%)"/>
+                <TextField fx:id="campoPonderacion" prefWidth="100" promptText="Ej. 30.00"/>
+            </VBox>
+            <HBox spacing="10" alignment="BOTTOM_LEFT">
+                <Button fx:id="btnCancelarEdicion" text="Cancelar" onAction="#handleCancelarEdicion" visible="false" managed="false" styleClass="flat"/>
+                <Button fx:id="btnGuardarActividad" text="Agregar a Rúbrica" onAction="#handleGuardarActividad" styleClass="accent" prefHeight="35"/>
+            </HBox>
+        </HBox>
+
+        <TableView fx:id="tablaActividades" VBox.vgrow="ALWAYS" style="-fx-border-color: #d0d7de; -fx-border-radius: 4;">
+            <columns>
+                <TableColumn fx:id="colNombre" text="Actividad" reorderable="false" resizable="false">
+                    <cellValueFactory><PropertyValueFactory property="nombre"/></cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colPonderacion" text="Ponderación (%)" reorderable="false" resizable="false" style="-fx-alignment: CENTER;">
+                    <cellValueFactory><PropertyValueFactory property="ponderacion"/></cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colAcciones" text="Acciones" reorderable="false" resizable="false" style="-fx-alignment: CENTER;"/>
+            </columns>
+            <placeholder>
+                <Label text="No hay actividades registradas en esta unidad." style="-fx-text-fill: #57606a;"/>
+            </placeholder>
+        </TableView>
+
+        <HBox fx:id="panelEstado" spacing="20" alignment="CENTER_LEFT" style="-fx-padding: 15; -fx-background-radius: 8;">
+            <Label fx:id="labelTotal" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="labelMensajeValidacion" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+        </HBox>
+    </VBox>
+
+    <StackPane fx:id="panelConfirmacion" visible="false" managed="false" style="-fx-background-color: rgba(0,0,0,0.4);">
+        <VBox maxWidth="400" maxHeight="-Infinity" spacing="20" style="-fx-background-color: white; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 15, 0, 0, 5); -fx-padding: 30;">
+            <Label fx:id="lblTituloConfirmacion" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+            <Label fx:id="lblMensajeConfirmacion" wrapText="true" style="-fx-text-fill: #57606a;"/>
+            <HBox spacing="10" alignment="CENTER_RIGHT">
+                <Button text="Cancelar" onAction="#handleCancelarConfirmacion" styleClass="flat"/>
+                <Button fx:id="btnConfirmarAccion" onAction="#handleEjecutarConfirmacion"/>
+            </HBox>
+        </VBox>
+    </StackPane>
+
+</StackPane>

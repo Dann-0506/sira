@@ -84,6 +84,20 @@ public class ResultadoDAO {
         return lista;
     }
 
+    public boolean tieneCalificacionesRegistradas(int actividadGrupoId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM resultado WHERE actividad_grupo_id = ? AND calificacion IS NOT NULL";
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, actividadGrupoId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
+    }
+
     // ==========================================
     // OPERACIONES DE ESCRITURA (Individual y Lote)
     // ==========================================
