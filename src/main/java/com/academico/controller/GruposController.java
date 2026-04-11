@@ -245,7 +245,6 @@ public class GruposController {
             }
         });
 
-        // 2. Mantenemos tu excelente lógica de búsqueda en tiempo real
         combo.getEditor().textProperty().addListener((obs, oldVal, newVal) -> {
             Platform.runLater(() -> {
                 if (newVal == null || (combo.getSelectionModel().getSelectedItem() != null 
@@ -256,8 +255,13 @@ public class GruposController {
                     if (newVal.isEmpty()) return true;
                     return item.toString().toLowerCase().contains(newVal.toLowerCase());
                 });
-                if (!listaFiltrada.isEmpty()) combo.show();
-                else combo.hide();
+
+                // AJUSTE: Solo desplegar si el usuario tiene el foco en el componente
+                if (!listaFiltrada.isEmpty() && combo.getEditor().isFocused()) {
+                    combo.show();
+                } else {
+                    combo.hide();
+                }
             });
         });
     }
@@ -333,6 +337,7 @@ public class GruposController {
         labelTituloFormulario.setText("Nuevo Grupo Académico");
         panelFormulario.setVisible(true);
         panelFormulario.setManaged(true);
+        limpiarFormulario();
     }
 
     private void abrirEdicion(Grupo g) {
@@ -373,8 +378,27 @@ public class GruposController {
         }
     }
 
-    @FXML private void handleCancelar() { panelFormulario.setVisible(false); panelFormulario.setManaged(false); }
-    private void limpiarFormulario() { campoClave.clear(); campoSemestre.clear(); cbMateria.setValue(null); cbMaestro.setValue(null); }
+    @FXML private void handleCancelar() { 
+        panelFormulario.setVisible(false); 
+        panelFormulario.setManaged(false); 
+        limpiarFormulario(); // Llama a la limpieza reforzada
+    }
+    
+    private void limpiarFormulario() { 
+        // 1. Forzamos el cierre visual
+        cbMateria.hide();
+        cbMaestro.hide();
+
+        // 2. Limpiamos campos de texto
+        campoClave.clear(); 
+        campoSemestre.clear(); 
+        
+        // 3. Limpiamos selección y editores para que el listener no se dispare
+        cbMateria.setValue(null); 
+        cbMaestro.setValue(null); 
+        cbMateria.getEditor().clear();
+        cbMaestro.getEditor().clear();
+    }
 
     // ==========================================
     // NOTIFICACIONES Y CONFIRMACIONES
