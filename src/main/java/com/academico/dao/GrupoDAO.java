@@ -179,4 +179,19 @@ public class GrupoDAO {
             ps.executeUpdate();
         }
     }
+
+    // ==========================================
+    // OPERACIONES DE ELIMINACIÓN
+    // ==========================================
+
+    public void eliminar(int id) throws SQLException {
+        String sql = "DELETE FROM grupo WHERE id = ?";
+        
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setInt(1, id);
+            ps.executeUpdate();
+        }
+    }
 }

@@ -26,6 +26,7 @@ public class MaestrosController {
     @FXML private TableColumn<Maestro, String> colNombre;
     @FXML private TableColumn<Maestro, String> colEmail;
     @FXML private TableColumn<Maestro, Void> colAcciones;
+    @FXML private TableColumn<Maestro, Boolean> colEstado;
     @FXML private Pagination paginacionMaestros;
     @FXML private TextField campoBusqueda;
 
@@ -74,6 +75,27 @@ public class MaestrosController {
         colNumEmpleado.setCellValueFactory(new PropertyValueFactory<>("numEmpleado"));
         colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
+        
+        colEstado.setCellValueFactory(new PropertyValueFactory<>("activo"));
+        colEstado.setCellFactory(param -> new TableCell<>() {
+            private final Label lblBadge = new Label();
+            {
+                lblBadge.setStyle("-fx-padding: 3 10; -fx-background-radius: 12; -fx-font-weight: bold; -fx-font-size: 11px;");
+            }
+            @Override
+            protected void updateItem(Boolean activo, boolean empty) {
+                super.updateItem(activo, empty);
+                if (empty || activo == null) {
+                    setGraphic(null);
+                } else {
+                    lblBadge.setText(activo ? "ACTIVO" : "INACTIVO");
+                    lblBadge.setStyle("-fx-padding: 3 10; -fx-background-radius: 12; -fx-font-weight: bold; -fx-font-size: 11px; " + 
+                        (activo ? "-fx-background-color: #d4edda; -fx-text-fill: #155724;" 
+                                : "-fx-background-color: #e2e3e5; -fx-text-fill: #383d41;"));
+                    setGraphic(lblBadge);
+                }
+            }
+        });
 
         colAcciones.setCellFactory(param -> new TableCell<>() {
             private final Button btnEditar = new Button("Editar");
@@ -113,6 +135,16 @@ public class MaestrosController {
                     setGraphic(panel);
                 }
             }
+        });
+
+        tablaMaestros.setRowFactory(tv -> {
+            TableRow<Maestro> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && (!row.isEmpty()) ) {
+                    abrirEdicion(row.getItem());
+                }
+            });
+            return row;
         });
     }
 

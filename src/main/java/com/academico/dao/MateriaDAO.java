@@ -42,6 +42,17 @@ public class MateriaDAO {
         }
     }
 
+    public Optional<Materia> findByClave(String clave) throws SQLException {
+        String sql = "SELECT * FROM materia WHERE clave = ?";
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, clave);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? Optional.of(mapear(rs)) : Optional.empty();
+            }
+        }
+    }
+
     public List<Materia> findAll() throws SQLException {
         String sql = "SELECT * FROM materia ORDER BY nombre";
         List<Materia> lista = new ArrayList<>();

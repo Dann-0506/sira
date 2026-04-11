@@ -10,11 +10,13 @@
         <HBox alignment="CENTER_LEFT" spacing="15">
             <Label text="Catálogo de Materias" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
             <Region HBox.hgrow="ALWAYS" />
-            <VBox alignment="CENTER_RIGHT" spacing="2">
-                <Label text="Formato CSV:" style="-fx-font-size: 10px; -fx-text-fill: -color-fg-muted;"/>
-                <Label text="CLAVE, NOMBRE, UNIDADES" style="-fx-font-size: 11px; -fx-font-weight: bold;"/>
-            </VBox>
-            <Button text="Importar CSV" onAction="#handleImportarCsv" styleClass="flat" style="-fx-pref-height: 35;"/>
+            
+            <Button text="Importar CSV" onAction="#handleImportarCsv" styleClass="button-outlined" style="-fx-pref-height: 35;">
+                <tooltip>
+                    <Tooltip text="Formato esperado:&#10;• CLAVE&#10;• NOMBRE DE LA MATERIA&#10;• TOTAL DE UNIDADES" />
+                </tooltip>
+            </Button>
+
             <TextField fx:id="campoBusqueda" promptText="Buscar clave o nombre..." onKeyReleased="#handleBusqueda" prefWidth="250" style="-fx-pref-height: 35;"/>
             <Button text="+ Nueva Materia" onAction="#handleNuevo" styleClass="accent" style="-fx-pref-height: 35; -fx-font-weight: bold;"/>
         </HBox>
