@@ -1,13 +1,22 @@
 package com.academico.model;
 
+/**
+ * Representa a un estudiante en el sistema.
+ * Está vinculado directamente a una cuenta de Usuario para el acceso.
+ */
 public class Alumno {
+    
+    // === ATRIBUTOS ===
     private int id;
     private Integer usuarioId;
     private String matricula;
+    
+    // Atributos heredados del Usuario (para facilitar la visualización en tablas)
     private String nombre;
     private String email;
     private boolean activo;
 
+    // === CONSTRUCTORES ===
     public Alumno() {}
 
     public Alumno(int id, Integer usuarioId, String matricula, String nombre, String email) {
@@ -18,26 +27,27 @@ public class Alumno {
         this.email = email;
     }
 
-    public int getId()                      { return id; }
-    public void setId(int id)               { this.id = id; }
+    // === GETTERS Y SETTERS ===
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public Integer getUsuarioId()                   { return usuarioId; }
-    public void setUsuarioId(Integer usuarioId)     { this.usuarioId = usuarioId; }
+    public Integer getUsuarioId() { return usuarioId; }
+    public void setUsuarioId(Integer usuarioId) { this.usuarioId = usuarioId; }
 
-    public String getMatricula()                    { return matricula; }
-    public void setMatricula(String matricula)      { this.matricula = matricula; }
+    public String getMatricula() { return matricula; }
+    public void setMatricula(String matricula) { this.matricula = matricula; }
 
-    public String getNombre()               { return nombre; }
-    public void setNombre(String nombre)    { this.nombre = nombre; }
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
 
-    public String getEmail()                { return email; }
-    public void setEmail(String email)      { this.email = email; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
     public boolean isActivo() { return activo; }
     public void setActivo(boolean activo) { this.activo = activo; }
 
     @Override
     public String toString() {
-        return "Alumno{id=" + id + ", matricula='" + matricula + "', nombre='" + nombre + "'}";
+        return "[" + matricula + "] " + nombre;
     }
 }

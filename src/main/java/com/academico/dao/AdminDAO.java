@@ -7,14 +7,24 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Objeto de Acceso a Datos (DAO) genérico para Administradores 
+ * (Actúa sobre la tabla de usuarios filtrando por rol).
+ */
 public class AdminDAO {
+
+    // ==========================================
+    // OPERACIONES DE LECTURA
+    // ==========================================
 
     public List<Usuario> findAllAdmins() throws SQLException {
         String sql = "SELECT * FROM usuario WHERE rol = 'admin' ORDER BY nombre";
         List<Usuario> lista = new ArrayList<>();
+        
         try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
+            
             while (rs.next()) {
                 Usuario u = new Usuario();
                 u.setId(rs.getInt("id"));
@@ -27,6 +37,10 @@ public class AdminDAO {
         }
         return lista;
     }
+
+    // ==========================================
+    // OPERACIONES DE ESCRITURA Y ACTUALIZACIÓN
+    // ==========================================
 
     public void crear(Usuario admin, String passwordHash) throws SQLException {
         String sql = "INSERT INTO usuario (nombre, email, password_hash, rol, activo) VALUES (?, ?, ?, 'admin', true)";
@@ -50,6 +64,10 @@ public class AdminDAO {
         }
     }
 
+    // ==========================================
+    // ESTADO Y SEGURIDAD
+    // ==========================================
+
     public void cambiarEstado(int id, boolean activo) throws SQLException {
         String sql = "UPDATE usuario SET activo = ? WHERE id = ? AND rol = 'admin'";
         try (Connection conn = DatabaseManagerUtil.getConnection();
@@ -60,21 +78,21 @@ public class AdminDAO {
         }
     }
 
-    public void eliminar(int id) throws SQLException {
-        String sql = "DELETE FROM usuario WHERE id = ? AND rol = 'admin'";
-        try (Connection conn = DatabaseManagerUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            ps.executeUpdate();
-        }
-    }
-
     public void actualizarPassword(int id, String passwordHash) throws SQLException {
         String sql = "UPDATE usuario SET password_hash = ? WHERE id = ? AND rol = 'admin'";
         try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, passwordHash);
             ps.setInt(2, id);
+            ps.executeUpdate();
+        }
+    }
+
+    public void eliminar(int id) throws SQLException {
+        String sql = "DELETE FROM usuario WHERE id = ? AND rol = 'admin'";
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
             ps.executeUpdate();
         }
     }

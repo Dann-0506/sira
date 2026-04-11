@@ -13,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.sql.SQLException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -58,7 +57,7 @@ class EstructuraAcademicaServiceTest {
 
     @Test
     @DisplayName("Debe rechazar el guardado si la suma excede 100")
-    void testGuardarActividad_FallaExcede100() throws SQLException {
+    void testGuardarActividad_FallaExcede100() throws Exception { // Se actualizó a Exception
         // Preparar: Simular que actualmente hay 80% registrado (80 + 30 = 110%)
         when(actividadDAO.sumaPonderaciones(1, 1)).thenReturn(new BigDecimal("80.00"));
 
@@ -75,9 +74,9 @@ class EstructuraAcademicaServiceTest {
 
     @Test
     @DisplayName("Debe lanzar excepción si se intenta guardar en una unidad cerrada")
-    void testGuardarActividad_FallaUnidadCerrada() throws SQLException {
-        // Preparar: Simular que el servicio de estado bloquea la operación
-        doThrow(new IllegalStateException("Acción no permitida: Unidad cerrada."))
+    void testGuardarActividad_FallaUnidadCerrada() throws Exception { // Se actualizó a Exception
+        // Preparar: Simular que el servicio de estado bloquea la operación con el NUEVO mensaje
+        doThrow(new IllegalStateException("Acción no permitida: La unidad ya ha sido cerrada."))
                 .when(estadoUnidadService).validarUnidadAbierta(1, 1);
 
         // Ejecutar y Verificar: Comprobar que detenga la ejecución inmediatamente
@@ -85,7 +84,8 @@ class EstructuraAcademicaServiceTest {
             estructuraService.guardarActividad(actividadPrueba);
         });
 
-        assertEquals("Acción no permitida: Unidad cerrada.", exception.getMessage());
+        // Aseguramos que el mensaje esperado es exactamente el mismo que lanza el servicio
+        assertEquals("Acción no permitida: La unidad ya ha sido cerrada.", exception.getMessage());
         
         // Confirmar que no llegó ni a validar matemáticas ni a insertar en la BD
         verify(actividadDAO, never()).sumaPonderaciones(anyInt(), anyInt());

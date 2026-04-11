@@ -9,9 +9,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Objeto de Acceso a Datos (DAO) para Inscripciones.
+ * Gestiona la vinculación de alumnos a grupos y la aplicación de 
+ * calificaciones finales manuales (overrides).
+ */
 public class InscripcionDAO {
 
-    // === Mapeo de ResultSet a Inscripcion ===
+    // ==========================================
+    // MAPEO DE RESULTADOS
+    // ==========================================
     
     private Inscripcion mapear(ResultSet rs) throws SQLException {
         Inscripcion i = new Inscripcion();
@@ -35,8 +42,9 @@ public class InscripcionDAO {
         return i;
     }
 
-
-    // === Consultas ===
+    // ==========================================
+    // OPERACIONES DE LECTURA
+    // ==========================================
 
     public Optional<Inscripcion> findById(int id) throws SQLException {
         String sql = "SELECT * FROM inscripcion WHERE id = ?";
@@ -83,8 +91,9 @@ public class InscripcionDAO {
         return lista;
     }
 
-
-    // === Escritura ===
+    // ==========================================
+    // OPERACIONES DE ESCRITURA Y TRANSACCIONES
+    // ==========================================
 
     public Inscripcion insertar(Inscripcion i) throws SQLException {
         String sql = """
@@ -135,7 +144,9 @@ public class InscripcionDAO {
         return duplicados;
     }
 
-    // === Actualización ===
+    // ==========================================
+    // ACTUALIZACIÓN ACADÉMICA
+    // ==========================================
 
     public void actualizarOverride(int inscripcionId, BigDecimal override, String justificacion) throws SQLException {
         String sql = """
@@ -159,7 +170,9 @@ public class InscripcionDAO {
         }
     }
     
-    // === Eliminación ===
+    // ==========================================
+    // OPERACIONES DE ELIMINACIÓN
+    // ==========================================
 
     public void eliminar(int id) throws SQLException {
         String sql = "DELETE FROM inscripcion WHERE id = ?";
