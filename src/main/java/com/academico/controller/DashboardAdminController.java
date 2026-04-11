@@ -15,7 +15,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
-public class DashboardController {
+public class DashboardAdminController {
 
     // === ELEMENTOS PRINCIPALES (Menú y Cabecera) ===
     @FXML private Label labelNombreUsuario;
@@ -69,26 +69,17 @@ public class DashboardController {
     private void construirMenu(String rol) {
         menuNavegacion.getChildren().clear();
 
-        if ("admin".equals(rol)) {
-            agregarSeccion("CATÁLOGOS");
-            agregarBoton("Administradores", NavegationUtil.ADMINS);
-            agregarBoton("Alumnos",         NavegationUtil.ALUMNOS);
-            agregarBoton("Materias",        NavegationUtil.MATERIAS);
-            agregarBoton("Maestros",        NavegationUtil.MAESTROS);
-            agregarBoton("Grupos",          NavegationUtil.GRUPOS);
-            agregarBoton("Inscripciones",   NavegationUtil.INSCRIPCIONES);
+        agregarSeccion("CATÁLOGOS");
+        agregarBoton("Administradores", NavegationUtil.ADMINS);
+        agregarBoton("Alumnos",         NavegationUtil.ALUMNOS);
+        agregarBoton("Materias",        NavegationUtil.MATERIAS);
+        agregarBoton("Maestros",        NavegationUtil.MAESTROS);
+        agregarBoton("Grupos",          NavegationUtil.GRUPOS);
+        agregarBoton("Inscripciones",   NavegationUtil.INSCRIPCIONES);
 
-            agregarSeccion("SISTEMA");
-            agregarBoton("Configuración", NavegationUtil.CONFIGURACION);
-            agregarBoton("Respaldos",     NavegationUtil.RESPALDOS);
-        }
-
-        if ("maestro".equals(rol)) {
-            agregarSeccion("MIS GRUPOS");
-            agregarBoton("Actividades",    NavegationUtil.ACTIVIDADES);
-            agregarBoton("Calificaciones", NavegationUtil.CALIFICACIONES);
-            agregarBoton("Reportes",       NavegationUtil.REPORTES);
-        }
+        agregarSeccion("SISTEMA");
+        agregarBoton("Configuración", NavegationUtil.CONFIGURACION);
+        agregarBoton("Respaldos",     NavegationUtil.RESPALDOS);
 
         agregarSeccion("CUENTA");
         Button btnPerfil = new Button("Mi perfil");

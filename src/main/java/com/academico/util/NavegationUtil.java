@@ -18,10 +18,13 @@ import java.util.Map;
  * principal y gestionar los títulos de las ventanas.
  */
 public class NavegationUtil {
-
+    
     // === RUTAS DEL SISTEMA ===
-    public static final String LOGIN          = "/com/academico/ui/login.fxml";
-    public static final String DASHBOARD      = "/com/academico/ui/dashboard.fxml";
+    public static final String LOGIN             = "/com/academico/ui/login.fxml";
+    public static final String DASHBOARD_ADMIN   = "/com/academico/ui/dashboard_admin.fxml";
+    public static final String DASHBOARD_MAESTRO = "/com/academico/ui/dashboard_maestro.fxml"; // NUEVA
+    
+    // Rutas Admin
     public static final String ADMINS         = "/com/academico/ui/admins.fxml";
     public static final String ALUMNOS        = "/com/academico/ui/alumnos.fxml";
     public static final String MATERIAS       = "/com/academico/ui/materias.fxml";
@@ -30,16 +33,22 @@ public class NavegationUtil {
     public static final String INSCRIPCIONES  = "/com/academico/ui/inscripciones.fxml";
     public static final String CONFIGURACION  = "/com/academico/ui/configuracion.fxml";
     public static final String RESPALDOS      = "/com/academico/ui/respaldos.fxml";
-    public static final String ACTIVIDADES    = "/com/academico/ui/actividades.fxml";
-    public static final String CALIFICACIONES = "/com/academico/ui/calificaciones.fxml";
-    public static final String REPORTES       = "/com/academico/ui/reportes.fxml";
-    public static final String PERFIL         = "/com/academico/ui/perfil.fxml";
+    
+    // Rutas Maestro
+    public static final String MIS_GRUPOS           = "/com/academico/ui/mis_grupos.fxml";
+    public static final String GRUPO_ACTIVIDADES    = "/com/academico/ui/grupo_actividades.fxml";
+    public static final String GRUPO_CALIFICACIONES = "/com/academico/ui/grupo_calificaciones.fxml";
+    public static final String GRUPO_BONUS          = "/com/academico/ui/grupo_bonus.fxml";
+    public static final String GRUPO_CONCENTRADO    = "/com/academico/ui/grupo_concentrado.fxml";
+    
 
     private static final Map<String, String> TITULOS = new HashMap<>();
 
     static {
         TITULOS.put(LOGIN,          "Iniciar Sesión");
-        TITULOS.put(DASHBOARD,      "Panel Principal");
+        TITULOS.put(DASHBOARD_ADMIN,      "Panel de Administración");
+        TITULOS.put(DASHBOARD_MAESTRO, "Portal Docente");
+
         TITULOS.put(ADMINS,         "Administradores");
         TITULOS.put(ALUMNOS,        "Alumnos");
         TITULOS.put(MATERIAS,       "Materias");
@@ -48,10 +57,12 @@ public class NavegationUtil {
         TITULOS.put(INSCRIPCIONES,  "Inscripciones");
         TITULOS.put(CONFIGURACION,  "Configuración");
         TITULOS.put(RESPALDOS,      "Respaldos");
-        TITULOS.put(ACTIVIDADES,    "Actividades");
-        TITULOS.put(CALIFICACIONES, "Calificaciones");
-        TITULOS.put(REPORTES,       "Reportes");
-        TITULOS.put(PERFIL,         "Mi Perfil");
+
+        TITULOS.put(MIS_GRUPOS,           "Mis Grupos");
+        TITULOS.put(GRUPO_ACTIVIDADES,    "Rúbrica de Evaluación");
+        TITULOS.put(GRUPO_CALIFICACIONES, "Calificaciones por Unidad");
+        TITULOS.put(GRUPO_BONUS,          "Asignación de Bonus");
+        TITULOS.put(GRUPO_CONCENTRADO,    "Concentrado Final");
     }
 
     // ==========================================

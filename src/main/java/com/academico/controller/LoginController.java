@@ -93,7 +93,8 @@ public class LoginController {
 
     private void navegarSegunRol(String rol) {
         switch (rol) {
-            case "admin", "maestro" -> NavegationUtil.irA(NavegationUtil.DASHBOARD);
+            case "admin" -> NavegationUtil.irA(NavegationUtil.DASHBOARD_ADMIN);
+            case "maestro" -> NavegationUtil.irA(NavegationUtil.DASHBOARD_MAESTRO);
             default -> mostrarError(errorGeneral, "Rol no reconocido. Contacta al administrador.");
         }
     }
