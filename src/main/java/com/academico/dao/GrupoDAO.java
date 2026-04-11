@@ -99,22 +99,26 @@ public class GrupoDAO {
 
     public List<Grupo> findByMaestro(int maestroId) throws SQLException {
         String sql = """
-                SELECT g.*,
-                       mat.nombre AS materia_nombre,
-                       u.nombre   AS maestro_nombre
+                SELECT g.*, 
+                       mat.nombre AS materia_nombre, 
+                       u.nombre AS maestro_nombre
                 FROM grupo g
-                JOIN materia mat ON mat.id = g.materia_id
-                JOIN maestro m   ON m.id   = g.maestro_id
-                JOIN usuario u   ON u.id   = m.usuario_id
-                WHERE g.maestro_id = ?
-                ORDER BY g.semestre DESC, g.clave
+                JOIN materia mat ON g.materia_id = mat.id
+                JOIN maestro m ON g.maestro_id = m.id
+                JOIN usuario u ON m.usuario_id = u.id
+                WHERE g.maestro_id = ? AND g.activo = true
+                ORDER BY g.semestre DESC, g.clave ASC
                 """;
+        
         List<Grupo> lista = new ArrayList<>();
         try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
+            
             ps.setInt(1, maestroId);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) lista.add(mapear(rs));
+                while (rs.next()) {
+                    lista.add(mapear(rs));
+                }
             }
         }
         return lista;

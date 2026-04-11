@@ -96,10 +96,19 @@ public class DashboardMaestroController {
         titulo.getStyleClass().add("sidebar-titulo");
         menuPrincipal.getChildren().add(titulo);
 
-        Button btnMisGrupos = crearBotonMenu("Mis Grupos Asignados", NavegationUtil.MIS_GRUPOS);
-        Button btnPerfil = crearBotonMenu("Mi Perfil", null); 
+        Button btnMisGrupos = crearBotonMenu("Mis Grupos Asignados", null);
         
-        // El botón de perfil activa el modal flotante en lugar de cambiar la vista principal
+        btnMisGrupos.setOnAction(e -> {
+            actualizarBotonActivo(btnMisGrupos);
+            
+            menuGrupoContextual.setVisible(false);
+            menuGrupoContextual.setManaged(false);
+            this.grupoSeleccionado = null;
+            
+            NavegationUtil.cargarEnArea(areaPrincipal, NavegationUtil.MIS_GRUPOS);
+        });
+
+        Button btnPerfil = crearBotonMenu("Mi Perfil", null); 
         btnPerfil.setOnAction(e -> abrirPerfilFlotante());
         
         menuPrincipal.getChildren().addAll(btnMisGrupos, btnPerfil);
@@ -119,10 +128,10 @@ public class DashboardMaestroController {
         Label subtitulo = new Label(grupo.getClave() + " - " + grupo.getMateriaNombre());
         subtitulo.setStyle("-fx-font-size: 11px; -fx-text-fill: #0969da; -fx-padding: 0 0 10 10; -fx-font-weight: bold;");
 
-        Button btnActividades = crearBotonMenu("1. Rúbrica y Actividades", NavegationUtil.GRUPO_ACTIVIDADES);
-        Button btnCalificaciones = crearBotonMenu("2. Calificar Alumnos", NavegationUtil.GRUPO_CALIFICACIONES);
-        Button btnBonus = crearBotonMenu("3. Asignar Puntos Extra", NavegationUtil.GRUPO_BONUS);
-        Button btnConcentrado = crearBotonMenu("4. Concentrado Final", NavegationUtil.GRUPO_CONCENTRADO);
+        Button btnActividades = crearBotonMenu("Rúbrica y Actividades", NavegationUtil.GRUPO_ACTIVIDADES);
+        Button btnCalificaciones = crearBotonMenu("Calificar Alumnos", NavegationUtil.GRUPO_CALIFICACIONES);
+        Button btnBonus = crearBotonMenu("Asignar Puntos Extra", NavegationUtil.GRUPO_BONUS);
+        Button btnConcentrado = crearBotonMenu("Concentrado Final", NavegationUtil.GRUPO_CONCENTRADO);
 
         menuGrupoContextual.getChildren().addAll(titulo, subtitulo, btnActividades, btnCalificaciones, btnBonus, btnConcentrado);
         
@@ -260,5 +269,9 @@ public class DashboardMaestroController {
 
         NavegationUtil.irA(NavegationUtil.LOGIN);
         stage.centerOnScreen();
+    }
+
+    public Grupo getGrupoSeleccionado() {
+        return this.grupoSeleccionado;
     }
 }

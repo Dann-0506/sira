@@ -117,6 +117,20 @@ public class InscripcionDAO {
         return lista;
     }
 
+    public int contarPorGrupo(int grupoId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM inscripcion WHERE grupo_id = ?";
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, grupoId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+
     // ==========================================
     // OPERACIONES DE ESCRITURA Y TRANSACCIONES
     // ==========================================

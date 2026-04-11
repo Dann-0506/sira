@@ -73,6 +73,14 @@ public class InscripcionService {
         }
     }
 
+    public int contarPorGrupo(int grupoId) throws Exception {
+        try {
+            return inscripcionDAO.contarPorGrupo(grupoId);
+        } catch (SQLException e) {
+            throw new Exception("Error al contar los alumnos inscritos.");
+        }
+    }
+
     public void eliminar(int id) throws Exception {
         try {
             inscripcionDAO.eliminar(id);

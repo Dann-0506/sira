@@ -35,6 +35,14 @@ public class GrupoService {
         }
     }
 
+    public List<Grupo> buscarGruposPorMaestro(int maestroId) throws Exception {
+        try {
+            return grupoDAO.findByMaestro(maestroId);
+        } catch (SQLException e) {
+            throw new Exception("Error al cargar los grupos del maestro desde la base de datos.");
+        }
+    }
+
     public Grupo buscarPorClave(String clave) throws Exception {
         try {
             return grupoDAO.findByClave(clave)
