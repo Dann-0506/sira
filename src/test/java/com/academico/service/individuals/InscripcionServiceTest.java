@@ -34,12 +34,11 @@ class InscripcionServiceTest {
     }
 
     @Test
-    @DisplayName("Debe lanzar excepción si el ID de inscripción no existe para el override")
-    void testAplicarOverride_NoExiste() throws Exception {
-        when(inscripcionDAO.findById(99)).thenReturn(Optional.empty());
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            inscripcionService.aplicarOverrideMateria(99, BigDecimal.ONE, "Error");
+    void testAplicarOverride_NoExiste() {
+        Exception exception = assertThrows(Exception.class, () -> {
+            inscripcionService.aplicarOverrideMateria(999, new BigDecimal("80.00"), "Justificación válida");
         });
+
+        assertTrue(exception.getMessage().contains("ya no existe"));
     }
 }
