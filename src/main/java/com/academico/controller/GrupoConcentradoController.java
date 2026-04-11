@@ -2,8 +2,10 @@ package com.academico.controller;
 
 import com.academico.model.*;
 import com.academico.service.CalificacionService;
-import com.academico.service.ReporteService; // Importamos el orquestador
-import com.academico.service.individuals.*;
+import com.academico.service.ReporteService;
+import com.academico.service.individuals.GrupoService;
+import com.academico.service.individuals.InscripcionService;
+import com.academico.service.individuals.UnidadService;
 
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -23,25 +25,26 @@ import java.util.Optional;
 
 public class GrupoConcentradoController {
 
-    // === SERVICIOS ===
-    private final UnidadService unidadService = new UnidadService();
+    // === SERVICIOS (Arquitectura Limpia) ===
+    private final ReporteService reporteService = new ReporteService(); // Orquestador principal
+    private final InscripcionService inscripcionService = new InscripcionService(); // Para Overrides
+    private final GrupoService grupoService = new GrupoService(); // Para Cierre de Curso
+    
+    // Servicios auxiliares solo para la construcción visual de la UI
+    private final UnidadService unidadService = new UnidadService(); 
     private final CalificacionService calificacionService = new CalificacionService();
-    private final ReporteService reporteService = new ReporteService();
-    private final InscripcionService inscripcionService = new InscripcionService();
-    private final GrupoService grupoService = new GrupoService();
 
     // === ELEMENTOS UI ===
     @FXML private Label lblEstadoCurso;
     @FXML private Button btnCerrarCurso;
     @FXML private TextField campoBusqueda;
-    @FXML private TableView<CalificacionFinal> tablaConcentrado;
+    @FXML private TableView<CalificacionFinal> tablaConcentrado; // Usamos el DTO directamente
     
     @FXML private VBox panelOverride;
     @FXML private Label lblNombreOverride;
     @FXML private TextField campoCalificacionManual;
     @FXML private TextField campoMotivoOverride;
     @FXML private Label lblMensajeOverride;
-    @FXML private Label lblInstrucciones;
 
     // === ESTADO ===
     private Grupo grupoActual;
@@ -56,33 +59,31 @@ public class GrupoConcentradoController {
     public void initialize() {
         if (DashboardMaestroController.instancia != null) {
             grupoActual = DashboardMaestroController.instancia.getGrupoSeleccionado();
-            this.cursoCerrado = grupoActual.isCerrado();
+            this.cursoCerrado = grupoActual.isCerrado(); // Estado real desde la BD
         }
         actualizarUICursoCerrado();
         cargarDatos();
     }
 
     private void actualizarUICursoCerrado() {
-    if (cursoCerrado) {
-        lblEstadoCurso.setText("CERRADO");
-        lblEstadoCurso.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #cf222e; -fx-background-color: #ffebe9; -fx-padding: 5 15; -fx-background-radius: 15;");
-        
-        btnCerrarCurso.setDisable(true);
-        btnCerrarCurso.setText("Acta Firmada");
-
-        lblInstrucciones.setText("Curso finalizado. Para correcciones extraordinarias, contacte a Servicios Escolares.");
+        if (cursoCerrado) {
+            lblEstadoCurso.setText("CERRADO");
+            lblEstadoCurso.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #cf222e; -fx-background-color: #ffebe9; -fx-padding: 5 15; -fx-background-radius: 15;");
+            btnCerrarCurso.setDisable(true);
+            btnCerrarCurso.setText("Acta Firmada");
+        }
     }
-}
 
     // ==========================================
-    // CARGA DE DATOS Y CÁLCULOS
+    // CARGA DE DATOS (Delegada al ReporteService)
     // ==========================================
     private void cargarDatos() {
         try {
             listaDatos.clear();
+            // Necesitamos las unidades solo para saber cuántas columnas dibujar
             unidadesGrupo = unidadService.listarPorMateria(grupoActual.getMateriaId());
             
-            // El ReporteService realiza toda la orquestación y cálculos pesados
+            // El ReporteService hace todo el trabajo pesado de BD y cálculos
             List<CalificacionFinal> reporte = reporteService.generarReporteFinalGrupo(grupoActual.getId());
             listaDatos.addAll(reporte);
 
@@ -96,30 +97,31 @@ public class GrupoConcentradoController {
     }
 
     // ==========================================
-    // COLUMNAS DINÁMICAS
+    // COLUMNAS DINÁMICAS (Consumiendo DTO)
     // ==========================================
     private void construirColumnas() {
         tablaConcentrado.getColumns().clear();
         tablaConcentrado.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
 
-        // 1. Matrícula (Campo plano del DTO)
+        // 1. Matrícula
         TableColumn<CalificacionFinal, String> colMatricula = new TableColumn<>();
         Label lblMat = new Label("Matrícula"); lblMat.setMaxWidth(Double.MAX_VALUE); lblMat.setAlignment(Pos.CENTER);
         colMatricula.setGraphic(lblMat);
-        colMatricula.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getAlumnoMatricula())); //
+        colMatricula.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getAlumnoMatricula()));
         colMatricula.setPrefWidth(100); colMatricula.setResizable(false); colMatricula.setReorderable(false);
         colMatricula.setStyle("-fx-alignment: CENTER;");
 
-        // 2. Nombre (Campo plano del DTO)
+        // 2. Nombre
         TableColumn<CalificacionFinal, String> colNombre = new TableColumn<>("Nombre del Alumno");
-        colNombre.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getAlumnoNombre())); //
+        colNombre.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getAlumnoNombre()));
         colNombre.setResizable(false); colNombre.setReorderable(false);
 
         tablaConcentrado.getColumns().add(colMatricula);
         tablaConcentrado.getColumns().add(colNombre);
+
         double anchoDinamico = 0;
 
-        // 3. Unidades
+        // 3. Unidades Dinámicas
         for (Unidad unidad : unidadesGrupo) {
             TableColumn<CalificacionFinal, String> colU = new TableColumn<>();
             Label lblU = new Label("U" + unidad.getNumero()); lblU.setMaxWidth(Double.MAX_VALUE); lblU.setAlignment(Pos.CENTER);
@@ -152,21 +154,21 @@ public class GrupoConcentradoController {
         Label lblDef = new Label("Calif.\nFinal"); lblDef.setMaxWidth(Double.MAX_VALUE); lblDef.setAlignment(Pos.CENTER); lblDef.setTextAlignment(TextAlignment.CENTER);
         colDef.setGraphic(lblDef);
         colDef.setCellValueFactory(d -> {
-            BigDecimal finalVal = d.getValue().getCalificacionFinal();
-            String valor = finalVal != null ? finalVal.toString() : "-";
+            BigDecimal val = d.getValue().getCalificacionFinal();
+            String valor = val != null ? val.toString() : "-";
             if (d.getValue().isEsOverride()) valor += " (M)"; 
             return new SimpleStringProperty(valor);
         });
         colDef.setPrefWidth(100); colDef.setResizable(false); colDef.setReorderable(false);
         colDef.setStyle("-fx-alignment: CENTER; -fx-font-weight: bold; -fx-background-color: #f6f8fa;");
 
-        // 6. Estado (Dinámico)
+        // 6. Estado (Dinámico con ConfiguracionService a través de CalificacionService)
         TableColumn<CalificacionFinal, String> colEstado = new TableColumn<>();
         Label lblEstado = new Label("Estado"); lblEstado.setMaxWidth(Double.MAX_VALUE); lblEstado.setAlignment(Pos.CENTER);
         colEstado.setGraphic(lblEstado);
         colEstado.setCellValueFactory(d -> {
             try {
-                return new SimpleStringProperty(calificacionService.determinarEstado(d.getValue().getCalificacionFinal())); //
+                return new SimpleStringProperty(calificacionService.determinarEstado(d.getValue().getCalificacionFinal()));
             } catch (Exception e) { return new SimpleStringProperty("ERROR"); }
         });
 
@@ -224,47 +226,49 @@ public class GrupoConcentradoController {
         tablaConcentrado.getColumns().add(colDef);
         tablaConcentrado.getColumns().add(colEstado);
         tablaConcentrado.getColumns().add(colAcciones);
-        
-        double anchoFijo = 100 + anchoDinamico + 100 + 100 + 115 + 200 + 5;
+
+        double anchoFijo = 100 + anchoDinamico + 100 + 100 + 115 + 200 + 3;
         colNombre.prefWidthProperty().bind(tablaConcentrado.widthProperty().subtract(anchoFijo));
     }
 
     // ==========================================
-    // LÓGICA DE OVERRIDE Y CIERRE
+    // LÓGICA DE OVERRIDE Y CIERRE (PERSISTENCIA REAL)
     // ==========================================
     @FXML private void handleBusqueda() {
         String texto = campoBusqueda.getText().toLowerCase().trim();
-        datosFiltrados.setPredicate(cf -> texto.isEmpty() || 
-            cf.getAlumnoNombre().toLowerCase().contains(texto) ||
-            cf.getAlumnoMatricula().toLowerCase().contains(texto));
+        datosFiltrados.setPredicate(f -> texto.isEmpty() || 
+            f.getAlumnoNombre().toLowerCase().contains(texto) ||
+            f.getAlumnoMatricula().toLowerCase().contains(texto));
     }
 
     @FXML private void handleCerrarCurso() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Cierre Definitivo de Curso");
         alert.setHeaderText("Estás a punto de cerrar el acta de la materia.");
-        alert.setContentText("Una vez cerrado, no podrás modificar calificaciones, asignar puntos extra ni realizar overrides. ¿Deseas continuar?");
+        alert.setContentText("Una vez cerrado, el grupo se archivará y no podrás modificar calificaciones ni realizar overrides. ¿Deseas continuar?");
         
-        if (alert.showAndWait().get() == ButtonType.OK) {
+        if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
             try {
+                // Llama al servicio real que actualiza 'estado_evaluacion' y 'activo'
                 grupoService.cerrarCursoDefinitivamente(grupoActual.getId());
-                this.cursoCerrado = true;
+                
+                cursoCerrado = true;
                 grupoActual.setEstadoEvaluacion("CERRADO");
-                grupoActual.setActivo(false); // Reflejar cambio en el objeto
+                grupoActual.setActivo(false); // Reflejar en memoria
                 
                 actualizarUICursoCerrado();
-                cargarDatos();
-                mostrarMensaje("Acta cerrada y grupo archivado exitosamente.", false);
+                cargarDatos(); 
             } catch (Exception e) {
-                mostrarMensaje(e.getMessage(), true);
+                Alert error = new Alert(Alert.AlertType.ERROR, e.getMessage());
+                error.showAndWait();
             }
         }
     }
 
-    private void prepararOverride(CalificacionFinal cf) {
+    private void prepararOverride(CalificacionFinal fila) {
         if (cursoCerrado) return;
-        this.alumnoSeleccionado = cf;
-        lblNombreOverride.setText(cf.getAlumnoMatricula() + " - " + cf.getAlumnoNombre());
+        alumnoSeleccionado = fila;
+        lblNombreOverride.setText(fila.getAlumnoMatricula() + " - " + fila.getAlumnoNombre());
         campoCalificacionManual.clear();
         campoMotivoOverride.clear();
         lblMensajeOverride.setVisible(false);
@@ -273,7 +277,7 @@ public class GrupoConcentradoController {
 
     @FXML private void handleCancelarOverride() {
         panelOverride.setVisible(false); panelOverride.setManaged(false);
-        this.alumnoSeleccionado = null;
+        alumnoSeleccionado = null;
     }
 
     @FXML private void handleGuardarOverride() {
@@ -287,21 +291,21 @@ public class GrupoConcentradoController {
 
         try {
             BigDecimal valor = new BigDecimal(valStr);
-            if (valor.compareTo(BigDecimal.ZERO) < 0 || valor.compareTo(new BigDecimal("100")) > 0) {
-                mostrarMensaje("La calificación debe estar entre 0 y 100.", true); return;
-            }
-
+            
+            // Llamada al servicio real en lugar de guardar en Map
             inscripcionService.aplicarOverrideMateria(
                 alumnoSeleccionado.getInscripcionId(), 
                 valor, 
                 motivo
             );
 
-            mostrarMensaje("Calificación manual guardada permanentemente.", false);
+            mostrarMensaje("Calificación manual aplicada correctamente.", false);
             javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(1.5));
             pause.setOnFinished(e -> { handleCancelarOverride(); cargarDatos(); });
             pause.play();
 
+        } catch (NumberFormatException e) {
+            mostrarMensaje("Formato numérico inválido.", true);
         } catch (Exception e) {
             mostrarMensaje(e.getMessage(), true);
         }
@@ -333,23 +337,5 @@ public class GrupoConcentradoController {
         
         info.setContentText(sb.toString());
         info.showAndWait();
-    }
-
-    // ==========================================
-    // WRAPPER CLASS
-    // ==========================================
-    public static class FilaConcentrado {
-        private final Alumno alumno;
-        private final int inscripcionId;
-        private final CalificacionFinal calificacionFinal;
-
-        public FilaConcentrado(Alumno alumno, int inscripcionId, CalificacionFinal calificacionFinal) {
-            this.alumno = alumno;
-            this.inscripcionId = inscripcionId;
-            this.calificacionFinal = calificacionFinal;
-        }
-        public Alumno getAlumno() { return alumno; }
-        public int getInscripcionId() { return inscripcionId; }
-        public CalificacionFinal getCalificacionFinal() { return calificacionFinal; }
     }
 }
