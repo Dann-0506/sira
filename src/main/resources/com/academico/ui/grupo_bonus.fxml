@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="20" style="-fx-background-color: -color-bg-default; -fx-padding: 30;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.academico.controller.GrupoBonusController">
+
+    <VBox spacing="5">
+        <Label text="Asignar Puntos Extra" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+        <Label text="Otorga bonificaciones directas sobre la calificación final de una unidad o de la materia completa." style="-fx-text-fill: #57606a;"/>
+    </VBox>
+
+    <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-background-color: #f6f8fa; -fx-padding: 15; -fx-background-radius: 8; -fx-border-color: #d0d7de; -fx-border-radius: 8;">
+        <Label text="Buscar Alumno:" style="-fx-font-weight: bold;"/>
+        <TextField fx:id="campoBusqueda" promptText="Matrícula o Nombre" prefWidth="250" onKeyReleased="#handleBusquedaAlumno"/>
+        <Region HBox.hgrow="ALWAYS"/>
+    </HBox>
+
+    <TableView fx:id="tablaAlumnos" VBox.vgrow="ALWAYS" style="-fx-border-color: #d0d7de; -fx-border-radius: 4;">
+        <placeholder>
+            <Label text="Cargando información académica de los alumnos..." style="-fx-text-fill: #57606a;"/>
+        </placeholder>
+    </TableView>
+
+    <VBox fx:id="panelAsignacion" spacing="15" visible="false" managed="false" style="-fx-background-color: #f1f8ff; -fx-padding: 20; -fx-background-radius: 8; -fx-border-color: #c8e1ff; -fx-border-radius: 8;">
+        
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Otorgando puntos a:" style="-fx-text-fill: #57606a;"/>
+            <Label fx:id="lblNombreSeleccionado" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
+        </HBox>
+        
+        <HBox spacing="20">
+            <VBox spacing="5">
+                <Label text="¿Dónde aplicar?" style="-fx-font-weight: bold;"/>
+                <ComboBox fx:id="comboTipoAplicacion" prefWidth="200" promptText="-- Seleccionar --"/>
+            </VBox>
+            
+            <VBox spacing="5">
+                <Label text="Puntos (+)" style="-fx-font-weight: bold;"/>
+                <TextField fx:id="campoPuntos" prefWidth="100" promptText="Ej. 5"/>
+            </VBox>
+            
+            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                <Label text="Motivo / Justificación" style="-fx-font-weight: bold;"/>
+                <TextField fx:id="campoMotivo" promptText="Ej. Participación destacada en el debate"/>
+            </VBox>
+        </HBox>
+        
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Button text="Cancelar" onAction="#handleCancelar" styleClass="flat"/>
+            <Button fx:id="btnGuardarPuntos" text="Guardar Puntos Extra" onAction="#handleGuardarPuntos" styleClass="success"/>
+        </HBox>
+        
+        <Label fx:id="lblMensajeFormulario" visible="false" managed="false" style="-fx-font-weight: bold;"/>
+    </VBox>
+
+</VBox>

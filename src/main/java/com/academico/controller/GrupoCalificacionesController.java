@@ -8,8 +8,10 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.scene.text.TextAlignment;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -75,7 +77,7 @@ public class GrupoCalificacionesController {
             actividadesUnidad = actividadService.buscarPorGrupoYUnidad(grupoActual.getId(), unidad.getId());
             
             if (!calificacionService.ponderacionesValidas(actividadesUnidad)) {
-                mostrarAdvertencia("🔒 Rúbrica incompleta. La suma de las actividades no es 100%. Ve a la pestaña '1. Rúbrica' para configurarlo.", true);
+                mostrarAdvertencia("🔒 Rúbrica incompleta. La suma de las actividades no es 100%. Ve a la pestaña 'Rúbrica' para configurarlo.", true);
                 tablaCalificaciones.setDisable(true);
                 btnGuardar.setDisable(true);
                 return;
@@ -100,35 +102,41 @@ public class GrupoCalificacionesController {
     // ==========================================
 
     private void construirColumnas() {
+        tablaCalificaciones.getColumns().clear();
         tablaCalificaciones.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
 
         // -- COLUMNA: MATRÍCULA --
-        TableColumn<FilaCalificacion, String> colMatricula = new TableColumn<>("Matrícula");
+        TableColumn<FilaCalificacion, String> colMatricula = new TableColumn<>();
+        Label lblMatricula = new Label("Matrícula");
+        lblMatricula.setMaxWidth(Double.MAX_VALUE);
+        lblMatricula.setAlignment(Pos.CENTER);
+        colMatricula.setGraphic(lblMatricula);
+        
         colMatricula.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getAlumno().getMatricula()));
         colMatricula.setPrefWidth(120); colMatricula.setMinWidth(120); colMatricula.setMaxWidth(120);
-        colMatricula.setResizable(false); colMatricula.setReorderable(false);
+        colMatricula.setResizable(false); 
+        colMatricula.setReorderable(false);
 
-        // -- COLUMNA: ALUMNO (Flexible) --
+        // -- COLUMNA: ALUMNO --
         TableColumn<FilaCalificacion, String> colAlumno = new TableColumn<>("Alumno");
         colAlumno.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getAlumno().getNombre()));
+        colAlumno.setResizable(false);
         colAlumno.setReorderable(false);
-        
-        // -- COLUMNA: RESULTADO BASE --
-        TableColumn<FilaCalificacion, String> colResultado = new TableColumn<>("Resultado Base");
-        colResultado.setCellValueFactory(data -> data.getValue().resultadoBaseProperty());
-        colResultado.setPrefWidth(130); colResultado.setMinWidth(130); colResultado.setMaxWidth(130);
-        colResultado.setResizable(false); colResultado.setReorderable(false);
-        colResultado.setStyle("-fx-alignment: CENTER; -fx-font-weight: bold; -fx-background-color: #f6f8fa;");
 
         tablaCalificaciones.getColumns().add(colMatricula);
         tablaCalificaciones.getColumns().add(colAlumno);
 
         double anchoDinamico = 0;
 
+        // -- COLUMNAS: ACTIVIDADES --
         for (ActividadGrupo actividad : actividadesUnidad) {
-            TableColumn<FilaCalificacion, String> colActividad = new TableColumn<>(
-                actividad.getNombre() + "\n(" + actividad.getPonderacion() + "%)"
-            );
+            TableColumn<FilaCalificacion, String> colActividad = new TableColumn<>();
+
+            Label lblActividad = new Label(actividad.getNombre() + "\n(" + actividad.getPonderacion() + "%)");
+            lblActividad.setMaxWidth(Double.MAX_VALUE);
+            lblActividad.setAlignment(Pos.CENTER);
+            lblActividad.setTextAlignment(TextAlignment.CENTER);
+            colActividad.setGraphic(lblActividad);
 
             colActividad.setCellValueFactory(data -> data.getValue().getCalificacionProperty(actividad.getId()));
 
@@ -137,15 +145,13 @@ public class GrupoCalificacionesController {
 
                 {
                     textField.setStyle("-fx-background-color: transparent; -fx-alignment: center;");
-                    
-                    // 1. AUTO-GUARDADO AL PERDER FOCO
+
                     textField.focusedProperty().addListener((obs, oldVal, newVal) -> {
                         if (!newVal) {
                             commitEdit(textField.getText());
                         }
                     });
 
-                    // 2. NAVEGACIÓN POR TECLADO (Flechas y Enter)
                     textField.setOnKeyPressed(event -> {
                         switch (event.getCode()) {
                             case ENTER:
@@ -195,11 +201,25 @@ public class GrupoCalificacionesController {
 
             colActividad.setPrefWidth(110); colActividad.setMinWidth(110); colActividad.setMaxWidth(110);
             colActividad.setResizable(false);
+            colActividad.setReorderable(false);
             colActividad.setStyle("-fx-alignment: CENTER;");
 
             tablaCalificaciones.getColumns().add(colActividad);
             anchoDinamico += 110;
         }
+
+        // -- COLUMNA: RESULTADO BASE --
+        TableColumn<FilaCalificacion, String> colResultado = new TableColumn<>();
+        Label lblResultado = new Label("Resultado Base");
+        lblResultado.setMaxWidth(Double.MAX_VALUE);
+        lblResultado.setAlignment(Pos.CENTER);
+        colResultado.setGraphic(lblResultado);
+        
+        colResultado.setCellValueFactory(data -> data.getValue().resultadoBaseProperty());
+        colResultado.setPrefWidth(130); colResultado.setMinWidth(130); colResultado.setMaxWidth(130);
+        colResultado.setResizable(false); 
+        colResultado.setReorderable(false);
+        colResultado.setStyle("-fx-alignment: CENTER; -fx-font-weight: bold; -fx-background-color: #f6f8fa;");
 
         tablaCalificaciones.getColumns().add(colResultado);
 
@@ -213,28 +233,25 @@ public class GrupoCalificacionesController {
 
     private void cargarDatosAlumnos(int unidadId) throws Exception {
         List<Alumno> alumnosInscritos = alumnoService.buscarPorGrupo(grupoActual.getId());
-        
         List<Inscripcion> inscripciones = inscripcionService.listarPorGrupo(grupoActual.getId());
+        
         Map<Integer, Integer> mapaInscripciones = new HashMap<>();
         for (Inscripcion insc : inscripciones) {
             mapaInscripciones.put(insc.getAlumnoId(), insc.getId());
         }
         
-        // 3. Construimos las filas de la tabla
         for (Alumno alumno : alumnosInscritos) {
             Integer inscripcionId = mapaInscripciones.get(alumno.getId());
-            if (inscripcionId == null) continue; // Por seguridad, si el alumno no tiene inscripción formal
+            if (inscripcionId == null) continue;
             
             FilaCalificacion fila = new FilaCalificacion(alumno, inscripcionId);
-            
-            // 4. Cargamos los resultados reales desde tu ResultadoService
             List<Resultado> resultadosPrevios = resultadoService.buscarPorInscripcionYUnidad(inscripcionId, unidadId);
             
-            // Llenamos las celdas dinámicas
             for (Resultado r : resultadosPrevios) {
                 fila.setCalificacion(r.getActividadGrupoId(), r.getCalificacion() != null ? r.getCalificacion().toString() : "");
             }
             
+            // Reutilizamos nuestra función que ahora delega al servicio
             recalcularResultadoBase(fila);
             datosTabla.add(fila);
         }
@@ -254,18 +271,28 @@ public class GrupoCalificacionesController {
     }
 
     private void recalcularResultadoBase(FilaCalificacion fila) {
-        BigDecimal totalUnidad = BigDecimal.ZERO;
+        // 1. Preparamos los datos en el formato que el servicio espera
+        List<Resultado> resultadosTemporales = new ArrayList<>();
         
         for (ActividadGrupo actividad : actividadesUnidad) {
             String calificacionStr = fila.getCalificacionValue(actividad.getId());
             if (!calificacionStr.isEmpty()) {
-                BigDecimal calificacion = new BigDecimal(calificacionStr);
-                // Fórmula: (Calificación * Ponderación) / 100
-                BigDecimal puntos = calificacion.multiply(actividad.getPonderacion()).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
-                totalUnidad = totalUnidad.add(puntos);
+                Resultado r = new Resultado();
+                r.setCalificacion(new BigDecimal(calificacionStr));
+                r.setPonderacion(actividad.getPonderacion()); // Importante para que CalificacionService calcule la Aportación
+                resultadosTemporales.add(r);
             }
         }
-        fila.setResultadoBase(totalUnidad.toString());
+
+        // 2. Delegamos el cálculo al servicio
+        BigDecimal totalUnidad = calificacionService.calcularResultadoBase(resultadosTemporales);
+        
+        // 3. Actualizamos la vista
+        if (totalUnidad != null) {
+            fila.setResultadoBase(totalUnidad.toString());
+        } else {
+            fila.setResultadoBase("0.00");
+        }
     }
 
     // ==========================================
