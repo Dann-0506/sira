@@ -5,9 +5,15 @@ import com.academico.util.DatabaseManagerUtil;
 
 import java.sql.*;
 
+/**
+ * Objeto de Acceso a Datos (DAO) para el Estado de las Unidades.
+ * Administra si una unidad está abierta (editable) o cerrada (solo lectura).
+ */
 public class EstadoUnidadDAO {
 
-    // === Mapeo de ResultSet a EstadoUnidad ===
+    // ==========================================
+    // MAPEO DE RESULTADOS
+    // ==========================================
 
     private EstadoUnidad mapear(ResultSet rs) throws SQLException {
         EstadoUnidad eu = new EstadoUnidad();
@@ -19,8 +25,9 @@ public class EstadoUnidadDAO {
         return eu;
     }
 
-
-    // === Consulta ===
+    // ==========================================
+    // OPERACIONES DE LECTURA
+    // ==========================================
 
     public EstadoUnidad findByGrupoYUnidad(int grupoId, int unidadId) throws SQLException {
         String sql = "SELECT * FROM estado_unidad WHERE grupo_id = ? AND unidad_id = ?";
@@ -35,7 +42,7 @@ public class EstadoUnidadDAO {
             }
         }
         
-        // Si no se encontró en la BD, devolvemos un objeto por defecto "ABIERTO"
+        // Si no se encontró en la BD, devolvemos un objeto por defecto "ABIERTA"
         EstadoUnidad estadoPorDefecto = new EstadoUnidad();
         estadoPorDefecto.setGrupoId(grupoId);
         estadoPorDefecto.setUnidadId(unidadId);
@@ -43,9 +50,12 @@ public class EstadoUnidadDAO {
         return estadoPorDefecto;
     }
 
-
-    // === Actualización ===
+    // ==========================================
+    // OPERACIONES DE ESCRITURA Y ACTUALIZACIÓN
+    // ==========================================
+    
     public void guardarEstado(int grupoId, int unidadId, String nuevoEstado) throws SQLException {
+        // Se utiliza UPSERT (Insert or Update) nativo de PostgreSQL
         String sql = """
                 INSERT INTO estado_unidad (grupo_id, unidad_id, estado, actualizado_en)
                 VALUES (?, ?, ?, NOW())
