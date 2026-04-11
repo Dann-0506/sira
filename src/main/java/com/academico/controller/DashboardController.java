@@ -80,7 +80,7 @@ public class DashboardController {
 
             agregarSeccion("SISTEMA");
             agregarBoton("Configuración", NavegationUtil.CONFIGURACION);
-            agregarBoton("Utilerías",     NavegationUtil.UTILERIA);
+            agregarBoton("Respaldos",     NavegationUtil.RESPALDOS);
         }
 
         if ("maestro".equals(rol)) {

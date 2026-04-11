@@ -29,7 +29,7 @@ public class NavegationUtil {
     public static final String GRUPOS         = "/com/academico/ui/grupos.fxml";
     public static final String INSCRIPCIONES  = "/com/academico/ui/inscripciones.fxml";
     public static final String CONFIGURACION  = "/com/academico/ui/configuracion.fxml";
-    public static final String UTILERIA       = "/com/academico/ui/utileria.fxml";
+    public static final String RESPALDOS      = "/com/academico/ui/respaldos.fxml";
     public static final String ACTIVIDADES    = "/com/academico/ui/actividades.fxml";
     public static final String CALIFICACIONES = "/com/academico/ui/calificaciones.fxml";
     public static final String REPORTES       = "/com/academico/ui/reportes.fxml";
@@ -47,7 +47,7 @@ public class NavegationUtil {
         TITULOS.put(GRUPOS,         "Grupos");
         TITULOS.put(INSCRIPCIONES,  "Inscripciones");
         TITULOS.put(CONFIGURACION,  "Configuración");
-        TITULOS.put(UTILERIA,       "Utilerías");
+        TITULOS.put(RESPALDOS,      "Respaldos");
         TITULOS.put(ACTIVIDADES,    "Actividades");
         TITULOS.put(CALIFICACIONES, "Calificaciones");
         TITULOS.put(REPORTES,       "Reportes");

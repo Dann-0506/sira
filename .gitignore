@@ -49,3 +49,6 @@ Thumbs.db
 *.log
 .env
 local.properties
+
+# Respaldos DB
+respaldos_db/
