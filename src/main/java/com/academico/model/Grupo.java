@@ -1,15 +1,24 @@
 package com.academico.model;
 
+/**
+ * Representa una instancia específica de una materia impartida por un docente.
+ * Vincula el catálogo de materias con la asignación académica real.
+ */
 public class Grupo {
+    
+    // === ATRIBUTOS DE PERSISTENCIA ===
     private int id;
     private int materiaId;
     private int maestroId;
     private String clave;
     private String semestre;
     private boolean activo;
+
+    // === ATRIBUTOS DE VISUALIZACIÓN (JOINS) ===
     private String materiaNombre;
     private String maestroNombre;
 
+    // === CONSTRUCTORES ===
     public Grupo() {}
 
     public Grupo(int id, int materiaId, int maestroId, String clave, String semestre, boolean activo) {
@@ -21,32 +30,33 @@ public class Grupo {
         this.activo = activo;
     }
 
-    public int getId()                      { return id; }
-    public void setId(int id)               { this.id = id; }
+    // === GETTERS Y SETTERS ===
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public int getMateriaId()                       { return materiaId; }
-    public void setMateriaId(int materiaId)         { this.materiaId = materiaId; }
+    public int getMateriaId() { return materiaId; }
+    public void setMateriaId(int materiaId) { this.materiaId = materiaId; }
 
-    public int getMaestroId()                       { return maestroId; }
-    public void setMaestroId(int maestroId)         { this.maestroId = maestroId; }
+    public int getMaestroId() { return maestroId; }
+    public void setMaestroId(int maestroId) { this.maestroId = maestroId; }
 
-    public String getClave()                { return clave; }
-    public void setClave(String clave)      { this.clave = clave; }
+    public String getClave() { return clave; }
+    public void setClave(String clave) { this.clave = clave; }
 
-    public String getSemestre()                     { return semestre; }
-    public void setSemestre(String semestre)        { this.semestre = semestre; }
+    public String getSemestre() { return semestre; }
+    public void setSemestre(String semestre) { this.semestre = semestre; }
 
-    public boolean isActivo()               { return activo; }
-    public void setActivo(boolean activo)   { this.activo = activo; }
+    public boolean isActivo() { return activo; }
+    public void setActivo(boolean activo) { this.activo = activo; }
 
-    public String getMateriaNombre()                        { return materiaNombre; }
-    public void setMateriaNombre(String materiaNombre)      { this.materiaNombre = materiaNombre; }
+    public String getMateriaNombre() { return materiaNombre; }
+    public void setMateriaNombre(String materiaNombre) { this.materiaNombre = materiaNombre; }
 
-    public String getMaestroNombre()                        { return maestroNombre; }
-    public void setMaestroNombre(String maestroNombre)      { this.maestroNombre = maestroNombre; }
+    public String getMaestroNombre() { return maestroNombre; }
+    public void setMaestroNombre(String maestroNombre) { this.maestroNombre = maestroNombre; }
 
     @Override
     public String toString() {
-        return "Grupo{clave='" + clave + "', semestre='" + semestre + "'}";
+        return "[" + clave + "] " + (materiaNombre != null ? materiaNombre : "Materia " + materiaId);
     }
 }
