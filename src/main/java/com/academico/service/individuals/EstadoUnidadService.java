@@ -1,14 +1,21 @@
 package com.academico.service.individuals;
 
-import java.sql.SQLException;
-
 import com.academico.dao.EstadoUnidadDAO;
 import com.academico.model.EstadoUnidad;
 
+import java.sql.SQLException;
 
+/**
+ * Servicio de Gestión de Estados Académicos.
+ * Responsabilidad: Controlar si una unidad está ABIERTA (editable) o CERRADA (bloqueada) 
+ * para un grupo específico.
+ */
 public class EstadoUnidadService {
+
+    // === DEPENDENCIAS ===
     private final EstadoUnidadDAO estadoUnidadDAO;
 
+    // === CONSTRUCTORES ===
     public EstadoUnidadService() {
         this.estadoUnidadDAO = new EstadoUnidadDAO();
     }
@@ -17,23 +24,48 @@ public class EstadoUnidadService {
         this.estadoUnidadDAO = estadoUnidadDAO;
     }
 
-    public void validarUnidadAbierta(int grupoId, int unidadId) throws SQLException {
-        EstadoUnidad estado = estadoUnidadDAO.findByGrupoYUnidad(grupoId, unidadId);
+    // ==========================================
+    // VALIDACIONES DE NEGOCIO
+    // ==========================================
 
-        if (estado.isCerrada()) {
-            throw new IllegalStateException("Acción no permitida: Unidad cerrada.");
+    public void validarUnidadAbierta(int grupoId, int unidadId) throws Exception {
+        try {
+            EstadoUnidad estado = estadoUnidadDAO.findByGrupoYUnidad(grupoId, unidadId);
+            
+            // Si el estado existe y está marcado explícitamente como cerrado, bloqueamos.
+            if (estado != null && estado.isCerrada()) {
+                throw new IllegalStateException("Acción no permitida: La unidad ya ha sido cerrada.");
+            }
+        } catch (SQLException e) {
+            throw new Exception("Error de conexión al verificar el estado de la unidad.");
         }
     }
 
-    public EstadoUnidad obtenerEstado(int grupoId, int unidadId) throws SQLException {
-        return estadoUnidadDAO.findByGrupoYUnidad(grupoId, unidadId);
+    // ==========================================
+    // OPERACIONES DE LECTURA Y ESCRITURA
+    // ==========================================
+
+    public EstadoUnidad obtenerEstado(int grupoId, int unidadId) throws Exception {
+        try {
+            return estadoUnidadDAO.findByGrupoYUnidad(grupoId, unidadId);
+        } catch (SQLException e) {
+            throw new Exception("Error al cargar el estado actual de la unidad.");
+        }
     }
 
-    public void cerrarUnidad(int grupoId, int unidadId) throws SQLException {
-        estadoUnidadDAO.guardarEstado(grupoId, unidadId, "CERRADA");
+    public void cerrarUnidad(int grupoId, int unidadId) throws Exception {
+        try {
+            estadoUnidadDAO.guardarEstado(grupoId, unidadId, "CERRADA");
+        } catch (SQLException e) {
+            throw new Exception("Error al intentar cerrar la unidad en la base de datos.");
+        }
     }
 
-    public void abrirUnidad(int grupoId, int unidadId) throws SQLException {
-        estadoUnidadDAO.guardarEstado(grupoId, unidadId, "ABIERTA");
+    public void abrirUnidad(int grupoId, int unidadId) throws Exception {
+        try {
+            estadoUnidadDAO.guardarEstado(grupoId, unidadId, "ABIERTA");
+        } catch (SQLException e) {
+            throw new Exception("Error al intentar reabrir la unidad en la base de datos.");
+        }
     }
 }
