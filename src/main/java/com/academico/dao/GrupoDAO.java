@@ -164,19 +164,22 @@ public class GrupoDAO {
 
     public Grupo insertar(Grupo g) throws SQLException {
         String sql = """
-                INSERT INTO grupo (materia_id, maestro_id, clave, semestre, activo, calificacion_minima_aprobatoria, calificacion_maxima)
+                INSERT INTO grupo (materia_id, maestro_id, clave, semestre, activo, 
+                                calificacion_minima_aprobatoria, calificacion_maxima)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 RETURNING id
                 """;
         try (Connection conn = DatabaseManagerUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+            PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, g.getMateriaId());
             ps.setInt(2, g.getMaestroId());
             ps.setString(3, g.getClave());
             ps.setString(4, g.getSemestre());
             ps.setBoolean(5, g.isActivo());
+
             ps.setBigDecimal(6, g.getCalificacionMinimaAprobatoria());
             ps.setBigDecimal(7, g.getCalificacionMaxima());
+            
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     g.setId(rs.getInt("id"));
@@ -188,11 +191,14 @@ public class GrupoDAO {
 
     public List<String> insertarLote(List<Grupo> grupos) throws SQLException {
         List<String> duplicados = new ArrayList<>();
+
         String sql = """
-                INSERT INTO grupo (materia_id, maestro_id, clave, semestre, activo, calificacion_minima_aprobatoria, calificacion_maxima)
+                INSERT INTO grupo (materia_id, maestro_id, clave, semestre, activo, 
+                                calificacion_minima_aprobatoria, calificacion_maxima)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT (clave) DO NOTHING
+                ON CONFLICT (clave, materia_id, semestre) DO NOTHING
                 """;
+                
         try (Connection conn = DatabaseManagerUtil.getConnection()) {
             conn.setAutoCommit(false);
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -204,8 +210,10 @@ public class GrupoDAO {
                     ps.setBoolean(5, g.isActivo());
                     ps.setBigDecimal(6, g.getCalificacionMinimaAprobatoria());
                     ps.setBigDecimal(7, g.getCalificacionMaxima());
+                    
+                    // Si no se insertó nada (por el DO NOTHING), lo marcamos como duplicado
                     if (ps.executeUpdate() == 0) {
-                        duplicados.add(g.getClave());
+                        duplicados.add(g.getClave() + " (" + g.getSemestre() + ")");
                     }
                 }
                 conn.commit();

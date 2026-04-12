@@ -55,12 +55,13 @@ CREATE TABLE IF NOT EXISTS grupo (
     id SERIAL PRIMARY KEY,
     materia_id INT NOT NULL REFERENCES materia(id),
     maestro_id INT NOT NULL REFERENCES maestro(id),
-    clave VARCHAR(20) NOT NULL UNIQUE,
+    clave VARCHAR(20) NOT NULL,
     semestre VARCHAR(50) NOT NULL,
     activo BOOLEAN NOT NULL DEFAULT TRUE,
     estado_evaluacion VARCHAR(20) NOT NULL DEFAULT 'ABIERTO' CHECK (estado_evaluacion IN ('ABIERTO', 'CERRADO')),
     calificacion_minima_aprobatoria DECIMAL(5,2) NOT NULL DEFAULT 70,
-    calificacion_maxima DECIMAL(5,2) NOT NULL DEFAULT 100
+    calificacion_maxima DECIMAL(5,2) NOT NULL DEFAULT 100,
+    UNIQUE (clave, materia_id, semestre)
 );
 
 CREATE TABLE IF NOT EXISTS inscripcion (
@@ -68,7 +69,7 @@ CREATE TABLE IF NOT EXISTS inscripcion (
     alumno_id                   INT          NOT NULL REFERENCES alumno(id)  ON DELETE RESTRICT,
     grupo_id                    INT          NOT NULL REFERENCES grupo(id)   ON DELETE RESTRICT,
     fecha                       DATE         NOT NULL DEFAULT CURRENT_DATE,
-    calificacion_final_override DECIMAL(5,2) CHECK (calificacion_final_override BETWEEN 0 AND 100),
+    calificacion_final_override DECIMAL(5,2) CHECK (calificacion_final_override >= 0),
     override_justificacion      TEXT,
     UNIQUE (alumno_id, grupo_id)
 );
@@ -86,7 +87,7 @@ CREATE TABLE IF NOT EXISTS resultado (
     id                 SERIAL       PRIMARY KEY,
     inscripcion_id     INT          NOT NULL REFERENCES inscripcion(id)     ON DELETE CASCADE,
     actividad_grupo_id INT          NOT NULL REFERENCES actividad_grupo(id) ON DELETE CASCADE,
-    calificacion       DECIMAL(5,2) CHECK (calificacion BETWEEN 0 AND 100),
+    calificacion       DECIMAL(5,2) CHECK (calificacion >= 0),
     modificado_en      TIMESTAMP    NOT NULL DEFAULT NOW(),
     UNIQUE (inscripcion_id, actividad_grupo_id)
 );
