@@ -52,6 +52,17 @@ public class GrupoService {
         }
     }
 
+    public List<Grupo> buscarGruposPorAlumno(int alumnoId) throws Exception {
+        if (alumnoId <= 0) {
+            throw new IllegalArgumentException("ID de alumno inválido.");
+        }
+        try {
+            return grupoDAO.findByAlumno(alumnoId);
+        } catch (SQLException e) {
+            throw new Exception("Error al cargar los cursos inscritos del alumno.");
+        }
+    }
+
     // ==========================================
     // OPERACIONES DE ESCRITURA
     // ==========================================

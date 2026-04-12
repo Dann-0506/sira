@@ -18,6 +18,9 @@ public class Grupo {
     // === ATRIBUTOS DE VISUALIZACIÓN (JOINS) ===
     private String materiaNombre;
     private String maestroNombre;
+    
+    // === ATRIBUTO CALCULADO ===
+    private int totalAlumnos;
 
     // === CONSTRUCTORES ===
     public Grupo() {}
@@ -58,6 +61,9 @@ public class Grupo {
 
     public String getEstadoEvaluacion() { return estadoEvaluacion; }
     public void setEstadoEvaluacion(String estadoEvaluacion) { this.estadoEvaluacion = estadoEvaluacion; }
+
+    public int getTotalAlumnos() { return totalAlumnos; }
+    public void setTotalAlumnos(int totalAlumnos) { this.totalAlumnos = totalAlumnos; }
 
     @Override
     public String toString() {

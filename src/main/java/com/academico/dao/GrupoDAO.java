@@ -125,6 +125,37 @@ public class GrupoDAO {
         return lista;
     }
 
+    public List<Grupo> findByAlumno(int alumnoId) throws SQLException {
+        String sql = """
+                SELECT g.*, m.nombre as materia_nombre, u.nombre as maestro_nombre,
+                       (SELECT COUNT(*) FROM inscripcion WHERE grupo_id = g.id) as total_alumnos
+                FROM grupo g
+                JOIN materia m ON m.id = g.materia_id
+                LEFT JOIN maestro ma ON ma.id = g.maestro_id
+                LEFT JOIN usuario u ON u.id = ma.usuario_id
+                JOIN inscripcion i ON i.grupo_id = g.id
+                WHERE i.alumno_id = ? AND g.activo = true
+                ORDER BY m.nombre ASC
+                """;
+        List<Grupo> lista = new ArrayList<>();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, alumnoId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Grupo g = mapear(rs); 
+                    g.setMateriaNombre(rs.getString("materia_nombre"));
+                    g.setMaestroNombre(rs.getString("maestro_nombre"));
+                    try { 
+                        g.setTotalAlumnos(rs.getInt("total_alumnos")); 
+                    } catch (Exception ignored) {} 
+                    lista.add(g);
+                }
+            }
+        }
+        return lista;
+    }
+
     // ==========================================
     // OPERACIONES DE ESCRITURA Y TRANSACCIONES
     // ==========================================
@@ -216,15 +247,15 @@ public class GrupoDAO {
     }
 
     public void actualizarEstadoActa(int id, String estadoEvaluacion, boolean activo) throws SQLException {
-    String sql = "UPDATE grupo SET estado_evaluacion = ?, activo = ? WHERE id = ?";
-    try (Connection conn = DatabaseManagerUtil.getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql)) {
-        ps.setString(1, estadoEvaluacion);
-        ps.setBoolean(2, activo);
-        ps.setInt(3, id);
-        ps.executeUpdate();
+        String sql = "UPDATE grupo SET estado_evaluacion = ?, activo = ? WHERE id = ?";
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, estadoEvaluacion);
+            ps.setBoolean(2, activo);
+            ps.setInt(3, id);
+            ps.executeUpdate();
+        }
     }
-}
 
     // ==========================================
     // OPERACIONES DE ELIMINACIÓN
