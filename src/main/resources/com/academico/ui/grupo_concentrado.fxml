@@ -3,6 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.chart.PieChart?>
 
 <VBox spacing="20" style="-fx-background-color: -color-bg-default; -fx-padding: 30;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.academico.controller.GrupoConcentradoController">
 
@@ -26,11 +27,22 @@
         <TextField fx:id="campoBusqueda" promptText="Matrícula o Nombre" prefWidth="250" onKeyReleased="#handleBusqueda"/>
     </HBox>
 
-    <TableView fx:id="tablaConcentrado" VBox.vgrow="ALWAYS" style="-fx-border-color: #d0d7de; -fx-border-radius: 4;">
-        <placeholder>
-            <Label text="Generando concentrado final..." style="-fx-text-fill: #57606a;"/>
-        </placeholder>
-    </TableView>
+    <HBox VBox.vgrow="ALWAYS" spacing="20">
+        
+        <TableView fx:id="tablaConcentrado" HBox.hgrow="ALWAYS" style="-fx-border-color: #d0d7de; -fx-border-radius: 4;">
+            <placeholder>
+                <Label text="Generando concentrado final..." style="-fx-text-fill: #57606a;"/>
+            </placeholder>
+        </TableView>
+
+        <VBox minWidth="280" maxWidth="300" spacing="15" alignment="TOP_CENTER" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 8; -fx-border-color: #d0d7de; -fx-border-radius: 8;">
+            <Label text="Estadísticas del Grupo" style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #24292f;"/>
+            <PieChart fx:id="graficaEstadisticas" legendSide="BOTTOM" labelsVisible="false" VBox.vgrow="ALWAYS"/>
+        </VBox>
+        
+    </HBox>
+
+    
 
     <VBox fx:id="panelOverride" spacing="15" visible="false" managed="false" style="-fx-background-color: #fff8c5; -fx-padding: 20; -fx-background-radius: 8; -fx-border-color: #d4a72c; -fx-border-radius: 8;">
         <HBox spacing="10" alignment="CENTER_LEFT">

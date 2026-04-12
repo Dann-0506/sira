@@ -7,6 +7,7 @@ import com.academico.service.individuals.GrupoService;
 import com.academico.service.individuals.InscripcionService;
 import com.academico.service.individuals.UnidadService;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -18,6 +19,8 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.TextAlignment;
+import javafx.scene.chart.PieChart;
+import javafx.scene.Node;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -26,9 +29,9 @@ import java.util.Optional;
 public class GrupoConcentradoController {
 
     // === SERVICIOS (Arquitectura Limpia) ===
-    private final ReporteService reporteService = new ReporteService(); // Orquestador principal
-    private final InscripcionService inscripcionService = new InscripcionService(); // Para Overrides
-    private final GrupoService grupoService = new GrupoService(); // Para Cierre de Curso
+    private final ReporteService reporteService = new ReporteService();
+    private final InscripcionService inscripcionService = new InscripcionService();
+    private final GrupoService grupoService = new GrupoService();
     
     // Servicios auxiliares solo para la construcción visual de la UI
     private final UnidadService unidadService = new UnidadService(); 
@@ -38,7 +41,8 @@ public class GrupoConcentradoController {
     @FXML private Label lblEstadoCurso;
     @FXML private Button btnCerrarCurso;
     @FXML private TextField campoBusqueda;
-    @FXML private TableView<CalificacionFinal> tablaConcentrado; // Usamos el DTO directamente
+    @FXML private TableView<CalificacionFinal> tablaConcentrado; 
+    @FXML private PieChart graficaEstadisticas;
     
     @FXML private VBox panelOverride;
     @FXML private Label lblNombreOverride;
@@ -91,13 +95,15 @@ public class GrupoConcentradoController {
             construirColumnas();
             tablaConcentrado.setItems(datosFiltrados);
 
+            actualizarGrafica();
+
         } catch (Exception e) {
             System.err.println("Error al cargar concentrado: " + e.getMessage());
         }
     }
 
     // ==========================================
-    // COLUMNAS DINÁMICAS (Consumiendo DTO)
+    // COLUMNAS DINÁMICAS
     // ==========================================
     private void construirColumnas() {
         tablaConcentrado.getColumns().clear();
@@ -162,7 +168,7 @@ public class GrupoConcentradoController {
         colDef.setPrefWidth(100); colDef.setResizable(false); colDef.setReorderable(false);
         colDef.setStyle("-fx-alignment: CENTER; -fx-font-weight: bold; -fx-background-color: #f6f8fa;");
 
-        // 6. Estado (Dinámico con ConfiguracionService a través de CalificacionService)
+        // 6. Estado
         TableColumn<CalificacionFinal, String> colEstado = new TableColumn<>();
         Label lblEstado = new Label("Estado"); lblEstado.setMaxWidth(Double.MAX_VALUE); lblEstado.setAlignment(Pos.CENTER);
         colEstado.setGraphic(lblEstado);
@@ -192,7 +198,7 @@ public class GrupoConcentradoController {
                 }
             }
         });
-        colEstado.setPrefWidth(115); colEstado.setResizable(false); colEstado.setReorderable(false);
+        colEstado.setPrefWidth(140); colEstado.setResizable(false); colEstado.setReorderable(false);
 
         // 7. Acciones
         TableColumn<CalificacionFinal, CalificacionFinal> colAcciones = new TableColumn<>();
@@ -227,12 +233,12 @@ public class GrupoConcentradoController {
         tablaConcentrado.getColumns().add(colEstado);
         tablaConcentrado.getColumns().add(colAcciones);
 
-        double anchoFijo = 100 + anchoDinamico + 100 + 100 + 115 + 200 + 3;
+        double anchoFijo = 100 + anchoDinamico + 100 + 100 + 145 + 200 + 3;
         colNombre.prefWidthProperty().bind(tablaConcentrado.widthProperty().subtract(anchoFijo));
     }
 
     // ==========================================
-    // LÓGICA DE OVERRIDE Y CIERRE (PERSISTENCIA REAL)
+    // LÓGICA DE OVERRIDE Y CIERRE
     // ==========================================
     @FXML private void handleBusqueda() {
         String texto = campoBusqueda.getText().toLowerCase().trim();
@@ -241,25 +247,47 @@ public class GrupoConcentradoController {
             f.getAlumnoMatricula().toLowerCase().contains(texto));
     }
 
-    @FXML private void handleCerrarCurso() {
+    @FXML 
+    private void handleCerrarCurso() {
+        boolean faltanCalificaciones = listaDatos.stream()
+        .anyMatch(cf -> {
+            long unidadesCalificadas = cf.getUnidades().stream()
+                .filter(u -> u.getResultadoFinal() != null)
+                .count();
+            return unidadesCalificadas < unidadesGrupo.size();
+        });
+
+        if (faltanCalificaciones) {
+            Alert alerta = new Alert(Alert.AlertType.WARNING);
+            alerta.setTitle("Atención: Acta Incompleta");
+            alerta.setHeaderText("No se puede cerrar el curso");
+            alerta.setContentText("Se detectaron unidades sin calificar. " +
+                                "Todos los alumnos deben tener nota en todas las unidades antes de cerrar.");
+            alerta.showAndWait();
+            return; 
+        }
+
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Cierre Definitivo de Curso");
         alert.setHeaderText("Estás a punto de cerrar el acta de la materia.");
-        alert.setContentText("Una vez cerrado, el grupo se archivará y no podrás modificar calificaciones ni realizar overrides. ¿Deseas continuar?");
+        alert.setContentText("Al cerrar, el grupo se archivará y no se podrán modificar calificaciones. Esta acción es irreversible. ¿Deseas continuar?");
         
         if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
             try {
-                // Llama al servicio real que actualiza 'estado_evaluacion' y 'activo'
                 grupoService.cerrarCursoDefinitivamente(grupoActual.getId());
                 
                 cursoCerrado = true;
                 grupoActual.setEstadoEvaluacion("CERRADO");
-                grupoActual.setActivo(false); // Reflejar en memoria
+                grupoActual.setActivo(false); 
                 
                 actualizarUICursoCerrado();
-                cargarDatos(); 
+                cargarDatos();
+
+                Alert exito = new Alert(Alert.AlertType.INFORMATION, "El acta ha sido cerrada y archivada correctamente.");
+                exito.showAndWait();
+                
             } catch (Exception e) {
-                Alert error = new Alert(Alert.AlertType.ERROR, e.getMessage());
+                Alert error = new Alert(Alert.AlertType.ERROR, "Error al cerrar el curso: " + e.getMessage());
                 error.showAndWait();
             }
         }
@@ -337,5 +365,65 @@ public class GrupoConcentradoController {
         
         info.setContentText(sb.toString());
         info.showAndWait();
+    }
+
+    // ==========================================
+    // GRÁFICA DE ESTADÍSTICAS
+    // ==========================================
+    private void actualizarGrafica() {
+        int aprobados = 0;
+        int reprobados = 0;
+        int pendientes = 0;
+
+        // 1. Conteo de los estados actuales basándonos en los datos de la tabla [cite: 193]
+        for (CalificacionFinal cf : listaDatos) {
+            try {
+                String estado = calificacionService.determinarEstado(cf.getCalificacionFinal());
+                switch (estado) {
+                    case "APROBADO": aprobados++; break;
+                    case "REPROBADO": reprobados++; break;
+                    default: pendientes++; break;
+                }
+            } catch (Exception e) {
+                pendientes++;
+            }
+        }
+
+        // 2. Definición de datos en orden específico para que coincidan con los colores por defecto
+        // Índice 0 (Rojo), Índice 1 (Amarillo/Naranja), Índice 2 (Verde)
+        ObservableList<PieChart.Data> datosGrafica = FXCollections.observableArrayList(
+            new PieChart.Data("Reprobados (" + reprobados + ")", reprobados),
+            new PieChart.Data("Pendientes (" + pendientes + ")", pendientes),
+            new PieChart.Data("Aprobados (" + aprobados + ")", aprobados)
+        );
+
+        graficaEstadisticas.setData(datosGrafica);
+
+        // 3. Forzado de colores hexadecimales para mayor seguridad visual
+        Platform.runLater(() -> {
+            for (int i = 0; i < graficaEstadisticas.getData().size(); i++) {
+                PieChart.Data data = graficaEstadisticas.getData().get(i);
+                String color;
+
+                if (data.getName().startsWith("Reprobados")) {
+                    color = "#cf222e"; // Rojo
+                } else if (data.getName().startsWith("Pendientes")) {
+                    color = "#d4a72c"; // Amarillo / Dorado
+                } else {
+                    color = "#2da44e"; // Verde
+                }
+
+                // Aplicar a la rebanada
+                if (data.getNode() != null) {
+                    data.getNode().setStyle("-fx-pie-color: " + color + ";");
+                }
+
+                // Aplicar al símbolo de la leyenda (Descripción)
+                Node symbol = graficaEstadisticas.lookup(".pie-legend-symbol" + i);
+                if (symbol != null) {
+                    symbol.setStyle("-fx-background-color: " + color + ";");
+                }
+            }
+        });
     }
 }
