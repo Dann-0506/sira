@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -17,14 +19,23 @@ import com.academico.model.Alumno;
 import com.academico.model.CalificacionFinal;
 import com.academico.model.Resultado;
 import com.academico.model.ResultadoUnidad;
+import com.academico.service.individuals.ConfiguracionService;
 
 class CalificacionServiceTest {
 
     private CalificacionService service;
+    private ConfiguracionService configMock;
 
     @BeforeEach
-    void setUp() {
-        service = new CalificacionService();
+    void setUp() throws Exception {
+        configMock = mock(ConfiguracionService.class);
+        
+        // Le enseñamos al mock qué responder cuando le pregunten por la configuración
+        when(configMock.obtenerCalificacionMinima()).thenReturn(new BigDecimal("70.00"));
+        when(configMock.obtenerCalificacionMaxima()).thenReturn(new BigDecimal("100.00"));
+        
+        // Inyectamos el mock
+        service = new CalificacionService(configMock);
     }
 
     // ── Ponderaciones ────────────────────────────────────────────────────────

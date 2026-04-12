@@ -61,7 +61,7 @@ public class NavegationUtil {
         TITULOS.put(MIS_GRUPOS,           "Mis Grupos");
         TITULOS.put(GRUPO_ACTIVIDADES,    "Rúbrica de Evaluación");
         TITULOS.put(GRUPO_CALIFICACIONES, "Calificaciones por Unidad");
-        TITULOS.put(GRUPO_BONUS,          "Asignaciar Puntos Extra");
+        TITULOS.put(GRUPO_BONUS,          "Asignar Puntos Extra");
         TITULOS.put(GRUPO_CONCENTRADO,    "Concentrado Final");
     }
 

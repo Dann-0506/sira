@@ -16,7 +16,17 @@ import java.util.Objects;
 public class CalificacionService {
 
     // DEPENDENCIA DINÁMICA
-    private final ConfiguracionService configuracionService = new ConfiguracionService();
+    private final ConfiguracionService configuracionService;
+
+    // Constructor normal para la aplicación
+    public CalificacionService() {
+        this.configuracionService = new ConfiguracionService();
+    }
+
+    // Constructor para inyección en los Tests
+    public CalificacionService(ConfiguracionService configuracionService) {
+        this.configuracionService = configuracionService;
+    }
 
     // === CONSTANTES MATEMÁTICAS ===
     private static final int ESCALA = 2;

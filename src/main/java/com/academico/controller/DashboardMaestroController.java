@@ -202,7 +202,8 @@ public class DashboardMaestroController {
         String nuevaPass = campoPerfilPassword.getText();
 
         if (nuevoNombre.isEmpty() || nuevoEmail.isEmpty()) {
-            mostrarNotificacionPerfil("El nombre y correo no pueden estar vacíos.", false, false);
+            mostrarNotificacionPerfil("El nombre y correo no pueden estar vacíos.", true, false);
+            return;
         }
         
         try {
