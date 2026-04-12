@@ -34,6 +34,7 @@ public class InscripcionDAO {
         BigDecimal override = rs.getBigDecimal("calificacion_final_override");
         i.setCalificacionFinalOverride(rs.wasNull() ? null : override);
         i.setOverrideJustificacion(rs.getString("override_justificacion"));
+        i.setEstadoFinal(rs.getString("estado_final"));
 
         try { i.setAlumnoNombre(rs.getString("alumno_nombre")); } catch (SQLException ignored) {}
         try { i.setAlumnoMatricula(rs.getString("alumno_matricula")); } catch (SQLException ignored) {}
@@ -206,6 +207,16 @@ public class InscripcionDAO {
             ps.setString(2, justificacion);
             ps.setInt(3, inscripcionId);
             
+            ps.executeUpdate();
+        }
+    }
+    
+    public void fijarEstadoFinal(int inscripcionId, String estado) throws SQLException {
+        String sql = "UPDATE inscripcion SET estado_final = ? WHERE id = ?";
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, estado);
+            ps.setInt(2, inscripcionId);
             ps.executeUpdate();
         }
     }

@@ -1,24 +1,16 @@
 package com.academico.controller;
 
 import com.academico.model.*;
-import com.academico.service.CalificacionService;
-import com.academico.service.ReporteService;
-import com.academico.service.individuals.ActividadGrupoService;
-import com.academico.service.individuals.BonusService;
-import com.academico.service.individuals.ResultadoService;
-import com.academico.service.individuals.UnidadService;
+import com.academico.service.AlumnoBoletaService;
+import com.academico.service.AlumnoBoletaService.*;
 
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
-
-import java.util.List;
-import java.util.Optional;
 
 public class AlumnoCursoDetalleController {
 
@@ -42,13 +34,8 @@ public class AlumnoCursoDetalleController {
     @FXML private VBox panelOverride;
     @FXML private Label lblJustificacionOverride;
 
-    // === SERVICIOS ===
-    private final ReporteService reporteService = new ReporteService();
-    private final UnidadService unidadService = new UnidadService();
-    private final CalificacionService calificacionService = new CalificacionService();
-    private final ActividadGrupoService actividadService = new ActividadGrupoService();
-    private final ResultadoService resultadoService = new ResultadoService();
-    private final BonusService bonusService = new BonusService();
+    // === SERVICIO ORQUESTADOR ===
+    private final AlumnoBoletaService boletaService = new AlumnoBoletaService();
 
     private Grupo cursoActual;
     private Alumno alumnoActual;
@@ -62,7 +49,7 @@ public class AlumnoCursoDetalleController {
             
             configurarCabecera();
             configurarColumnas();
-            cargarDatosGlobales();
+            cargarBoleta();
         }
     }
 
@@ -106,7 +93,7 @@ public class AlumnoCursoDetalleController {
             {
                 btn.getStyleClass().add("flat");
                 btn.setStyle("-fx-text-fill: #0969da; -fx-cursor: hand;");
-                btn.setOnAction(e -> mostrarDesgloseUnidad(getItem()));
+                btn.setOnAction(e -> mostrarDesglose(getItem()));
             }
             @Override
             protected void updateItem(FilaUnidadDTO item, boolean empty) {
@@ -119,86 +106,38 @@ public class AlumnoCursoDetalleController {
         });
     }
 
-    private void cargarDatosGlobales() {
+    private void cargarBoleta() {
         try {
-            List<Unidad> unidades = unidadService.listarPorMateria(cursoActual.getMateriaId());
-            List<CalificacionFinal> reporteGlobal = reporteService.generarReporteFinalGrupo(cursoActual.getId());
+            // Toda la lógica compleja se la dejamos al Orquestador
+            BoletaDTO boleta = boletaService.obtenerBoletaGlobal(cursoActual, alumnoActual);
+            this.inscripcionIdActual = boleta.inscripcionId();
+
+            // Llenar Tabla
+            tablaUnidades.setItems(FXCollections.observableArrayList(boleta.filasUnidades()));
+
+            // Llenar Resumen
+            lblPromedioBase.setText(boleta.promedioBase());
             
-            CalificacionFinal misDatos = reporteGlobal.stream()
-                .filter(cf -> cf.getAlumnoMatricula().equals(alumnoActual.getMatricula()))
-                .findFirst()
-                .orElse(null);
+            lblBonus.setText(boleta.bonus());
+            lblBonus.setStyle(boleta.tieneBonus() ? "-fx-text-fill: #2da44e;" : "-fx-text-fill: #57606a;");
+            
+            lblCalificacionFinal.setText(boleta.calificacionFinal());
+            lblEstadoFinal.setText(boleta.estadoFinal());
+            aplicarEstiloEstado(lblEstadoFinal, boleta.estadoFinal());
 
-            if (misDatos != null) {
-                this.inscripcionIdActual = misDatos.getInscripcionId();
-            }
-
-            ObservableList<FilaUnidadDTO> datosTabla = FXCollections.observableArrayList();
-            for (Unidad unidad : unidades) {
-                String calificacionStr = "-";
-                String estadoStr = "PENDIENTE";
-
-                if (misDatos != null) {
-                    Optional<ResultadoUnidad> resultado = misDatos.getUnidades().stream()
-                        .filter(u -> u.getUnidadId() == unidad.getId())
-                        .findFirst();
-
-                    if (resultado.isPresent() && resultado.get().getResultadoFinal() != null) {
-                        calificacionStr = resultado.get().getResultadoFinal().toString();
-                        estadoStr = calificacionService.determinarEstado(resultado.get().getResultadoFinal());
-                    }
-                }
-
-                String tituloUnidad = "U" + unidad.getNumero() + " - " + unidad.getNombre();
-                datosTabla.add(new FilaUnidadDTO(unidad.getId(), tituloUnidad, calificacionStr, estadoStr));
-            }
-            tablaUnidades.setItems(datosTabla);
-
-            // Resumen inferior
-            if (misDatos != null) {
-                lblPromedioBase.setText(misDatos.getCalificacionCalculada() != null ? misDatos.getCalificacionCalculada().toString() : "-");
-
-                if (misDatos.getBonusMateria() != null && misDatos.getBonusMateria().doubleValue() > 0) {
-                    lblBonus.setText("+" + misDatos.getBonusMateria().toString() + " pts");
-                    lblBonus.setStyle("-fx-text-fill: #2da44e;"); 
-                } else {
-                    lblBonus.setText("0.00 pts");
-                    lblBonus.setStyle("-fx-text-fill: #57606a;"); 
-                }
-
-                String finalStr = misDatos.getCalificacionFinal() != null ? misDatos.getCalificacionFinal().toString() : "-";
-                lblCalificacionFinal.setText(finalStr);
-
-                String estadoGlobal = "PENDIENTE";
-                try {
-                    if (misDatos.getCalificacionFinal() != null) {
-                        estadoGlobal = calificacionService.determinarEstado(misDatos.getCalificacionFinal());
-                    }
-                } catch (Exception ignored) {}
-                
-                lblEstadoFinal.setText(estadoGlobal);
-                aplicarEstiloEstado(lblEstadoFinal, estadoGlobal);
-
-                if (misDatos.isEsOverride()) {
-                    lblCalificacionFinal.setText(finalStr + " (M)");
-                    lblJustificacionOverride.setText("Motivo registrado: " + misDatos.getOverrideJustificacion());
-                    panelOverride.setVisible(true);
-                    panelOverride.setManaged(true);
-                }
+            if (boleta.esOverride()) {
+                lblCalificacionFinal.setText(boleta.calificacionFinal() + " (M)");
+                lblJustificacionOverride.setText("Motivo registrado: " + boleta.justificacionOverride());
+                panelOverride.setVisible(true);
+                panelOverride.setManaged(true);
             }
 
         } catch (Exception e) {
-            System.err.println("Error al cargar la boleta unificada: " + e.getMessage());
+            System.err.println("Error al cargar la boleta: " + e.getMessage());
         }
     }
 
-    /**
-     * Refactorizado: Obtiene el desglose delegando todo a la capa de Servicios 
-     * y cruzando los datos en memoria mediante Streams.
-     */
-    private void mostrarDesgloseUnidad(FilaUnidadDTO fila) {
-        if (inscripcionIdActual == -1) return;
-
+    private void mostrarDesglose(FilaUnidadDTO fila) {
         Alert info = new Alert(Alert.AlertType.INFORMATION);
         info.setTitle("Desglose de Calificación");
         info.setHeaderText("Detalle de Evaluación\n" + fila.nombreUnidad());
@@ -207,42 +146,25 @@ public class AlumnoCursoDetalleController {
         content.setStyle("-fx-padding: 10;");
 
         try {
-            // 1. Mostrar Actividades (Cruzando Estructura vs Resultados)
-            List<ActividadGrupo> actividades = actividadService.buscarPorGrupoYUnidad(cursoActual.getId(), fila.unidadId());
-            List<Resultado> resultados = resultadoService.buscarPorInscripcionYUnidad(inscripcionIdActual, fila.unidadId());
+            // El orquestador nos devuelve las tareas y los bonus ya organizados
+            DesgloseUnidadDTO desglose = boletaService.obtenerDesgloseUnidad(inscripcionIdActual, cursoActual.getId(), fila.unidadId());
 
-            if (actividades.isEmpty()) {
+            if (desglose.actividades().isEmpty()) {
                 content.getChildren().add(new Label("No hay actividades registradas en esta unidad."));
             } else {
-                for (ActividadGrupo ag : actividades) {
-                    // Buscar si el alumno tiene calificación en esta actividad
-                    Optional<Resultado> resOpt = resultados.stream()
-                            .filter(r -> r.getActividadGrupoId() == ag.getId())
-                            .findFirst();
-
-                    String calif = "Sin calificar";
-                    if (resOpt.isPresent() && resOpt.get().getCalificacion() != null) {
-                        calif = resOpt.get().getCalificacion().toString();
-                    }
-
-                    Label lblAct = new Label("• " + ag.getNombre() + " (" + ag.getPonderacion() + "%): " + calif);
+                for (DetalleActividadDTO act : desglose.actividades()) {
+                    Label lblAct = new Label("• " + act.nombre() + " (" + act.ponderacion() + "%): " + act.calificacion());
                     lblAct.setStyle("-fx-font-size: 14px; -fx-text-fill: #24292f;");
                     content.getChildren().add(lblAct);
                 }
             }
 
-            // 2. Mostrar Bonus de Unidad (Delegado al servicio)
-            Optional<Bonus> bonusOpt = bonusService.obtenerBonusUnidad(inscripcionIdActual, fila.unidadId());
-            
-            if (bonusOpt.isPresent()) {
-                Bonus bonus = bonusOpt.get();
+            if (desglose.tieneBonus()) {
                 content.getChildren().add(new Separator());
-                
-                Label lblBonus = new Label("Bonus de Unidad Aplicado: +" + bonus.getPuntos() + " pts");
+                Label lblBonus = new Label("Bonus de Unidad Aplicado: " + desglose.puntosBonus());
                 lblBonus.setStyle("-fx-font-weight: bold; -fx-text-fill: #2da44e;");
                 
-                String just = bonus.getJustificacion();
-                Label lblJust = new Label("Motivo: " + (just != null && !just.isBlank() ? just : "Sin especificar"));
+                Label lblJust = new Label("Motivo: " + (desglose.justificacionBonus() != null ? desglose.justificacionBonus() : "N/A"));
                 lblJust.setStyle("-fx-font-style: italic; -fx-text-fill: #57606a;");
                 
                 content.getChildren().addAll(lblBonus, lblJust);
@@ -265,6 +187,4 @@ public class AlumnoCursoDetalleController {
             badge.setStyle("-fx-background-color: #e1e4e8; -fx-text-fill: #57606a; -fx-font-weight: bold; -fx-padding: 4 12; -fx-background-radius: 12;");
         }
     }
-
-    public record FilaUnidadDTO(int unidadId, String nombreUnidad, String calificacion, String estado) {}
 }

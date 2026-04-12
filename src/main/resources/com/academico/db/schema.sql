@@ -68,6 +68,7 @@ CREATE TABLE IF NOT EXISTS inscripcion (
     fecha                       DATE         NOT NULL DEFAULT CURRENT_DATE,
     calificacion_final_override DECIMAL(5,2) CHECK (calificacion_final_override BETWEEN 0 AND 100),
     override_justificacion      TEXT,
+    estado_final                VARCHAR(20)
     UNIQUE (alumno_id, grupo_id)
 );
 

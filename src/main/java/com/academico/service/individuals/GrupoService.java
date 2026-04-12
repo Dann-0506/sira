@@ -1,7 +1,12 @@
 package com.academico.service.individuals;
 
 import com.academico.dao.GrupoDAO;
+import com.academico.dao.InscripcionDAO;
+import com.academico.model.CalificacionFinal;
 import com.academico.model.Grupo;
+import com.academico.service.CalificacionService;
+import com.academico.service.ReporteService;
+
 import java.sql.SQLException;
 import java.util.List;
 
@@ -128,14 +133,24 @@ public class GrupoService {
         }
     }
 
-    public void cerrarCursoDefinitivamente(int id) throws Exception {
+    public void cerrarCursoDefinitivamente(int grupoId) throws Exception {
         try {
-            // Cierra evaluación y DESACTIVA el grupo
-            grupoDAO.actualizarEstadoActa(id, "CERRADO", false);
+            ReporteService reporteService = new ReporteService();
+            CalificacionService calService = new CalificacionService();
+            InscripcionDAO inscripcionDAO = new InscripcionDAO();
+            
+            List<CalificacionFinal> reporte = reporteService.generarReporteFinalGrupo(grupoId);
+
+            for (CalificacionFinal alumno : reporte) {
+                String estado = calService.determinarEstado(alumno.getCalificacionFinal());
+                inscripcionDAO.fijarEstadoFinal(alumno.getInscripcionId(), estado);
+            }
+
+            grupoDAO.actualizarEstadoActa(grupoId, "CERRADO", false);
         } catch (SQLException e) {
-            throw new Exception("Error al intentar finalizar el curso.");
+            throw new Exception("Error al intentar finalizar el curso y persistir estados.");
         }
-    }
+}
 
     public void eliminar(int id) throws Exception {
         try {

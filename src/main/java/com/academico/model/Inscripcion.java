@@ -14,8 +14,9 @@ public class Inscripcion {
     private int alumnoId;
     private int grupoId;
     private LocalDate fecha; 
-    private BigDecimal calificacionFinalOverride; // Nulo si se usa el cálculo automático
+    private BigDecimal calificacionFinalOverride;
     private String overrideJustificacion;
+    private String estadoFinal;
 
     // === ATRIBUTOS DE VISUALIZACIÓN (JOINS) ===
     private String alumnoNombre;
@@ -68,6 +69,9 @@ public class Inscripcion {
     public String getSemestre() { return semestre; }
     public void setSemestre(String semestre) { this.semestre = semestre; }
 
+    public String getEstadoFinal() { return estadoFinal; }
+    public void setEstadoFinal(String estadoFinal) { this.estadoFinal = estadoFinal; }
+    
     @Override
     public String toString() {
         return "Inscripción Alumno " + alumnoId + " en Grupo " + grupoId;
