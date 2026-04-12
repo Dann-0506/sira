@@ -1,7 +1,12 @@
 package com.academico.service.individuals;
 
 import com.academico.dao.GrupoDAO;
+import com.academico.dao.InscripcionDAO;
+import com.academico.model.CalificacionFinal;
 import com.academico.model.Grupo;
+import com.academico.model.Inscripcion;
+import com.academico.service.ReporteService;
+
 import java.sql.SQLException;
 import java.util.List;
 
@@ -38,6 +43,15 @@ public class GrupoService {
         }
     }
 
+    public Grupo buscarPorId(int id) throws Exception {
+        try {
+            return grupoDAO.findById(id)
+                    .orElseThrow(() -> new Exception("No se encontró un grupo con el ID especificado."));
+        } catch (SQLException e) {
+            throw new Exception("Error de base de datos al buscar el grupo por ID.", e);
+        }
+    }
+
     public List<Grupo> buscarGruposPorMaestro(int maestroId) throws Exception {
         try {
             return grupoDAO.findByMaestro(maestroId);
@@ -52,6 +66,15 @@ public class GrupoService {
                 .orElseThrow(() -> new Exception("El grupo con clave '" + clave + "' no existe."));
         } catch (SQLException e) {
             throw new Exception("Error de conexión al buscar el grupo por clave.");
+        }
+    }
+
+    public Grupo buscarPorClaveYSemestre(String clave, String semestre) throws Exception {
+        try {
+            return grupoDAO.findByClaveYSemestre(clave, semestre)
+                .orElseThrow(() -> new Exception("El grupo '" + clave + "' para el semestre '" + semestre + "' no existe."));
+        } catch (SQLException e) {
+            throw new Exception("Error de conexión al buscar el grupo.");
         }
     }
 
@@ -117,19 +140,35 @@ public class GrupoService {
     }
 
     public void cerrarCurso(int id) throws Exception {
-        try {
-            grupoDAO.actualizarEstadoEvaluacion(id, "CERRADO");
-        } catch (SQLException e) {
-            throw new Exception("Error al intentar cerrar el acta del grupo.");
-        }
+    try {
+        // 1. Snapshot de promedios finales (Persistencia histórica)
+        congelarCalificacionesFinales(id);
+        
+        // 2. Cambio de estado en la BD
+        grupoDAO.actualizarEstadoEvaluacion(id, "CERRADO");
+        
+    } catch (SQLException e) {
+        throw new Exception("Error al cerrar el acta del grupo.");
     }
+}
 
     public void reabrirCurso(int id) throws Exception {
         try {
-            // Abre evaluación y REACTIVA el grupo
+            // 1. Abre evaluación y REACTIVA el grupo
             grupoDAO.actualizarEstadoActa(id, "ABIERTO", true);
-        } catch (SQLException e) {
-            throw new Exception("Error al intentar reabrir el curso.");
+            
+            // 2. ¡CRÍTICO! Limpiamos el Snapshot para que el sistema vuelva a calcular "on-demand"
+            InscripcionDAO inscripcionDAO = new InscripcionDAO();
+            InscripcionService inscripcionService = new InscripcionService();
+            
+            List<Inscripcion> inscripciones = inscripcionService.listarPorGrupo(id);
+            for (Inscripcion i : inscripciones) {
+                // Devolvemos las celdas a NULL
+                inscripcionDAO.guardarResultadosHistoricos(i.getId(), null, "PENDIENTE");
+            }
+            
+        } catch (Exception e) {
+            throw new Exception("Error al intentar reabrir el curso: " + e.getMessage());
         }
     }
 
@@ -142,23 +181,38 @@ public class GrupoService {
         }
     }
 
-    public void eliminar(int id) throws Exception {
-        Grupo grupo = grupoDAO.findById(id).orElseThrow(() -> new Exception("Grupo no encontrado."));
+    private void congelarCalificacionesFinales(int grupoId) throws Exception {
+        ReporteService reporteService = new ReporteService();
+        InscripcionDAO inscripcionDAO = new InscripcionDAO();
+        
+        // Obtenemos los límites específicos de este grupo
+        Grupo grupo = grupoDAO.findById(grupoId).orElseThrow(() -> new Exception("Grupo no encontrado."));
+        List<CalificacionFinal> reporte = reporteService.generarReporteFinalGrupo(grupoId, grupo.getCalificacionMaxima());
 
+        for (CalificacionFinal cf : reporte) {
+            // Guardamos físicamente el resultado en la tabla inscripcion
+            inscripcionDAO.guardarResultadosHistoricos(
+                cf.getInscripcionId(), 
+                cf.getCalificacionFinal(), 
+                cf.getCalificacionFinal().compareTo(grupo.getCalificacionMinimaAprobatoria()) >= 0 ? "APROBADO" : "REPROBADO"
+            );
+        }
+    }
+
+    public void eliminar(int id) throws Exception {
+        // Validación de regla de negocio
+        Grupo grupo = grupoDAO.findById(id).orElseThrow(() -> new Exception("Grupo no encontrado."));
         if (grupo.isCerrado()) {
             throw new Exception("Operación denegada: No se puede eliminar un grupo histórico que ya tiene un acta cerrada.");
         }
 
-        // 2. SEGUNDA CAPA DE DEFENSA (Integridad de Datos)
-        // Si el grupo está ABIERTO, intentamos borrarlo físicamente
         try {
             grupoDAO.eliminar(id); 
         } catch (SQLException e) {
-            // El código 23503 de PostgreSQL indica una violación de llave foránea (Foreign Key)
             if ("23503".equals(e.getSQLState())) {
-                throw new Exception("No se puede eliminar: El grupo ya tiene alumnos inscritos o actividades registradas.");
+                throw new Exception("No se puede eliminar: El grupo ya tiene alumnos inscritos.");
             }
-            throw new Exception("Error al eliminar el grupo de la base de datos.");
+            throw new Exception("Error al eliminar el grupo.");
         }
     }
 }

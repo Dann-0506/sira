@@ -31,6 +31,10 @@ public class InscripcionDAO {
             i.setFecha(fechaSql.toLocalDate());
         }
 
+        BigDecimal calc = rs.getBigDecimal("calificacion_final_calculada");
+        i.setCalificacionFinalCalculada(rs.wasNull() ? null : calc);
+        i.setEstadoAcademico(rs.getString("estado_academico"));
+
         BigDecimal override = rs.getBigDecimal("calificacion_final_override");
         i.setCalificacionFinalOverride(rs.wasNull() ? null : override);
         i.setOverrideJustificacion(rs.getString("override_justificacion"));
@@ -49,14 +53,30 @@ public class InscripcionDAO {
     // ==========================================
 
     public Optional<Inscripcion> findById(int id) throws SQLException {
-        String sql = "SELECT * FROM inscripcion WHERE id = ?";
+        String sql = """
+                SELECT i.*, 
+                       u.nombre AS alumno_nombre, 
+                       a.matricula AS alumno_matricula, 
+                       g.clave AS grupo_clave, 
+                       g.semestre AS semestre, 
+                       m.nombre AS materia_nombre
+                FROM inscripcion i
+                JOIN alumno a ON i.alumno_id = a.id
+                JOIN usuario u ON a.usuario_id = u.id
+                JOIN grupo g ON i.grupo_id = g.id
+                JOIN materia m ON g.materia_id = m.id
+                WHERE i.id = ?
+                """;
         try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() ? Optional.of(mapear(rs)) : Optional.empty();
+                if (rs.next()) {
+                    return Optional.of(mapear(rs));
+                }
             }
         }
+        return Optional.empty();
     }
 
     public Optional<Inscripcion> findByAlumnoYGrupo(int alumnoId, int grupoId) throws SQLException {
@@ -182,6 +202,29 @@ public class InscripcionDAO {
             }
         }
         return duplicados;
+    }
+
+    public void guardarResultadosHistoricos(int inscripcionId, BigDecimal calculada, String estado) throws SQLException {
+        String sql = """
+                UPDATE inscripcion 
+                SET calificacion_final_calculada = ?, 
+                    estado_academico = ?
+                WHERE id = ?
+                """;
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            if (calculada != null) {
+                ps.setBigDecimal(1, calculada);
+            } else {
+                ps.setNull(1, Types.NUMERIC);
+            }
+            
+            ps.setString(2, estado);
+            ps.setInt(3, inscripcionId);
+            
+            ps.executeUpdate();
+        }
     }
 
     // ==========================================

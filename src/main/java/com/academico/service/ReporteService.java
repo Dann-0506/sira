@@ -35,6 +35,44 @@ public class ReporteService {
     }
 
     private CalificacionFinal procesarCalificacionAlumno(Inscripcion inscripcion, List<Unidad> unidades, BigDecimal limiteMaximo) throws Exception {
+        
+        // === NUEVA LÓGICA DE LECTURA HISTÓRICA ===
+        // Si el acta ya se cerró en el pasado, devolvemos la "fotografía" de la Base de Datos
+        if (inscripcion.getCalificacionFinalCalculada() != null) {
+            Alumno alumno = alumnoService.buscarPorId(inscripcion.getAlumnoId());
+            CalificacionFinal cfHistorica = new CalificacionFinal();
+            
+            cfHistorica.setInscripcionId(inscripcion.getId());
+            cfHistorica.setAlumnoId(alumno.getId());
+            cfHistorica.setAlumnoNombre(alumno.getNombre());
+            cfHistorica.setAlumnoMatricula(alumno.getMatricula());
+            
+            // Cargamos el desglose visual de unidades (para el reporte final del PDF y boletas)
+            List<ResultadoUnidad> resultadosUnidades = new ArrayList<>();
+            for (Unidad unidad : unidades) {
+                resultadosUnidades.add(procesarResultadoUnidad(inscripcion.getId(), unidad, limiteMaximo));
+            }
+            cfHistorica.setUnidades(resultadosUnidades);
+
+            // Inyectamos el valor histórico (sin hacer ningún cálculo)
+            cfHistorica.setCalificacionCalculada(inscripcion.getCalificacionFinalCalculada());
+            
+            // Si el maestro aplicó un Override manual antes de cerrar el acta, se respeta la decisión
+            BigDecimal finalDefinitiva = inscripcion.getCalificacionFinalOverride() != null 
+                    ? inscripcion.getCalificacionFinalOverride() 
+                    : inscripcion.getCalificacionFinalCalculada();
+                    
+            cfHistorica.setCalificacionFinal(finalDefinitiva);
+            cfHistorica.setEsOverride(inscripcion.getCalificacionFinalOverride() != null);
+            cfHistorica.setOverrideJustificacion(inscripcion.getOverrideJustificacion());
+            
+            return cfHistorica;
+        }
+
+        // =========================================
+        // SI LLEGA AQUÍ, EL GRUPO ESTÁ ABIERTO:
+        // Continúa con la lógica normal de cálculo on-demand
+        
         Alumno alumno = alumnoService.buscarPorId(inscripcion.getAlumnoId());
         List<ResultadoUnidad> resultadosUnidades = new ArrayList<>();
 
@@ -46,7 +84,6 @@ public class ReporteService {
                 .map(Bonus::getPuntos)
                 .orElse(BigDecimal.ZERO);
 
-        // Orquestación final delegando el límite al nuevo CalificacionService determinista
         return calificacionService.calcularCalificacionFinal(
                 inscripcion.getId(), 
                 alumno, 
@@ -54,7 +91,7 @@ public class ReporteService {
                 extraMateria, 
                 inscripcion.getCalificacionFinalOverride(), 
                 inscripcion.getOverrideJustificacion(),
-                limiteMaximo // <--- NUEVO PARÁMETRO INYECTADO
+                limiteMaximo 
         );
     }
 

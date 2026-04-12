@@ -2,6 +2,9 @@ package com.academico.service.individuals;
 
 import com.academico.dao.BonusDAO;
 import com.academico.model.Bonus;
+import com.academico.model.Grupo;
+import com.academico.model.Inscripcion;
+
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -62,7 +65,15 @@ public class BonusService {
     // ==========================================
 
     public void guardar(Bonus bonus) throws Exception {
+        InscripcionService inscripcionService = new InscripcionService();
+        GrupoService grupoService = new GrupoService();
+        
+        Inscripcion inscripcion = inscripcionService.buscarPorId(bonus.getInscripcionId());
+        Grupo grupo = grupoService.buscarPorId(inscripcion.getGrupoId());
         // 1. Validaciones de negocio
+        if (grupo.isCerrado()) {
+            throw new Exception("Seguridad: No se pueden otorgar puntos extra porque el acta del grupo ya está firmada.");
+        }
         if (bonus.getPuntos() == null || bonus.getPuntos().compareTo(java.math.BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Los puntos extra deben ser mayores a 0.");
         }

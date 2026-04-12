@@ -9,19 +9,20 @@
       fx:controller="com.academico.controller.MisCursosAlumnoController">
 
     <VBox spacing="5">
-        <Label text="Mis Cursos Inscritos" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #24292f;"/>
-        <Label text="Selecciona un curso para ver tu progreso y calificaciones detalladas." 
+        <Label text="Mi Historial Académico" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #24292f;"/>
+        <Label text="Consulta tus cursos actuales y el registro histórico de tus semestres anteriores." 
                style="-fx-text-fill: #57606a; -fx-font-size: 14px;"/>
     </VBox>
 
-    <Label fx:id="labelCargando" text="Cargando tus cursos..." style="-fx-font-size: 14px; -fx-text-fill: #57606a;"/>
+    <Label fx:id="labelCargando" text="Cargando cursos..." style="-fx-font-size: 14px; -fx-text-fill: #57606a;"/>
 
     <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;" VBox.vgrow="ALWAYS">
-        <FlowPane fx:id="contenedorTarjetas" hgap="20" vgap="20">
-            <padding>
-                <Insets bottom="20" left="5" right="5" top="5" />
-            </padding>
-        </FlowPane>
+        <content>
+            <FlowPane fx:id="contenedorTarjetas" hgap="20" vgap="20">
+                <padding>
+                    <Insets bottom="20" left="5" right="5" top="5" />
+                </padding>
+                </FlowPane>
+        </content>
     </ScrollPane>
-
 </VBox>

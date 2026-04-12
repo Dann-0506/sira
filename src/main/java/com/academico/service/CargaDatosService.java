@@ -170,8 +170,10 @@ public class CargaDatosService {
                 String[] fila = filas.get(i);
                 
                 if (i == 0 && esEncabezado(fila, "materia", "clave", "docente")) continue;
+                
+                // Validamos que tenga las 4 columnas: ClaveMateria, NumEmpleado, ClaveGrupo, Semestre
                 if (fila.length < 4) {
-                    errores.add("Línea " + (i + 1) + ": Columnas insuficientes.");
+                    errores.add("Línea " + (i + 1) + ": Columnas insuficientes (Se requiere: Materia, Docente, Clave Grupo, Semestre).");
                     continue;
                 }
 
@@ -191,6 +193,7 @@ public class CargaDatosService {
                     grupo.setSemestre(semestre);
                     grupo.setActivo(true);
 
+                    // El Service ahora inyecta los límites históricos automáticamente
                     grupoService.guardar(grupo, false);
 
                 } catch (Exception e) {
@@ -210,19 +213,23 @@ public class CargaDatosService {
             for (int i = 0; i < lineas.size(); i++) {
                 String[] fila = lineas.get(i);
                 
-                if (i == 0 && esEncabezado(fila, "matricula", "alumno", "grupo", "clave")) continue;
+                if (i == 0 && esEncabezado(fila, "matricula", "alumno", "grupo")) continue;
 
-                if (fila.length < 2) {
-                    errores.add("Línea " + (i + 1) + ": Faltan columnas obligatorias.");
+                // EXIGIMOS 3 COLUMNAS: Matricula, ClaveGrupo, Semestre
+                if (fila.length < 3) {
+                    errores.add("Línea " + (i + 1) + ": Faltan datos (Se requiere: Matrícula, Clave de Grupo, Semestre).");
                     continue;
                 }
 
                 try {
                     String matricula = fila[0].trim();
                     String claveGrupo = fila[1].trim();
+                    String semestre = fila[2].trim(); // <--- NUEVO CAMPO
 
                     Alumno alumno = alumnoService.buscarPorMatricula(matricula);
-                    Grupo grupo = grupoService.buscarPorClave(claveGrupo);
+                    
+                    // USAMOS LA NUEVA BÚSQUEDA COMPUESTA
+                    Grupo grupo = grupoService.buscarPorClaveYSemestre(claveGrupo, semestre);
 
                     Inscripcion ins = new Inscripcion();
                     ins.setAlumnoId(alumno.getId());

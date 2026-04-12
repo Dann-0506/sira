@@ -61,6 +61,11 @@ public class GrupoCalificacionesController {
     }
 
     private void cargarUnidades() {
+        if (grupoActual.isCerrado()) {
+            btnGuardar.setDisable(true);
+            tablaCalificaciones.setEditable(false);
+            mostrarAdvertencia("El acta de este grupo ha sido firmada. Calificaciones en modo solo lectura.", false);
+        }
         if (grupoActual == null) return;
         try {
             List<Unidad> unidades = unidadService.listarPorMateria(grupoActual.getMateriaId());
@@ -78,7 +83,7 @@ public class GrupoCalificacionesController {
             actividadesUnidad = actividadService.buscarPorGrupoYUnidad(grupoActual.getId(), unidad.getId());
             
             if (!calificacionService.ponderacionesValidas(actividadesUnidad)) {
-                mostrarAdvertencia("🔒 Rúbrica incompleta. La suma de las actividades no es 100%. Ve a la pestaña 'Rúbrica' para configurarlo.", true);
+                mostrarAdvertencia("Rúbrica incompleta. La suma de las actividades no es 100%. Ve a la pestaña 'Rúbrica' para configurarlo.", true);
                 tablaCalificaciones.setDisable(true);
                 btnGuardar.setDisable(true);
                 return;
@@ -308,6 +313,11 @@ public class GrupoCalificacionesController {
 
     @FXML
     private void handleGuardarCalificaciones() {
+        if (grupoActual.isCerrado()) {
+            mostrarAdvertencia("Operación denegada: El grupo ya está cerrado.", true);
+            return;
+        }
+
         bloqueoPorValidacion = false;
 
         tablaCalificaciones.requestFocus();

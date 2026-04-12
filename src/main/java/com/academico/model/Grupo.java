@@ -77,7 +77,7 @@ public class Grupo {
 
     @Override
     public String toString() {
-        return "[" + clave + "] " + (materiaNombre != null ? materiaNombre : "Materia " + materiaId);
+        return "[" + clave + "] " + (materiaNombre != null ? materiaNombre : "Materia " + materiaId) + " (" + semestre + ")";
     }
 
     public boolean isCerrado() { return "CERRADO".equals(estadoEvaluacion); }

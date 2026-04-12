@@ -73,6 +73,15 @@ public class InscripcionService {
         }
     }
 
+    public Inscripcion buscarPorId(int id) throws Exception {
+        try {
+            return inscripcionDAO.findById(id)
+                    .orElseThrow(() -> new Exception("No se encontró la inscripción con el ID especificado."));
+        } catch (SQLException e) {
+            throw new Exception("Error de base de datos al buscar la inscripción por ID.", e);
+        }
+    }
+
     public int contarPorGrupo(int grupoId) throws Exception {
         try {
             return inscripcionDAO.contarPorGrupo(grupoId);

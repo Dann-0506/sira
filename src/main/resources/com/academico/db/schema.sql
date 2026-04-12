@@ -69,6 +69,8 @@ CREATE TABLE IF NOT EXISTS inscripcion (
     alumno_id                   INT          NOT NULL REFERENCES alumno(id)  ON DELETE RESTRICT,
     grupo_id                    INT          NOT NULL REFERENCES grupo(id)   ON DELETE RESTRICT,
     fecha                       DATE         NOT NULL DEFAULT CURRENT_DATE,
+    calificacion_final_calculada DECIMAL(5,2) CHECK (calificacion_final_calculada >= 0),
+    estado_academico            VARCHAR(20)  DEFAULT 'PENDIENTE' CHECK (estado_academico IN ('APROBADO', 'REPROBADO', 'PENDIENTE')),
     calificacion_final_override DECIMAL(5,2) CHECK (calificacion_final_override >= 0),
     override_justificacion      TEXT,
     UNIQUE (alumno_id, grupo_id)

@@ -42,22 +42,23 @@ public class GrupoDAO {
 
     public Optional<Grupo> findById(int id) throws SQLException {
         String sql = """
-                SELECT g.*,
-                       mat.nombre AS materia_nombre,
-                       u.nombre   AS maestro_nombre
+                SELECT g.*, m.nombre AS materia_nombre, u.nombre AS maestro_nombre 
                 FROM grupo g
-                JOIN materia mat ON mat.id = g.materia_id
-                JOIN maestro m   ON m.id   = g.maestro_id
-                JOIN usuario u   ON u.id   = m.usuario_id
+                JOIN materia m ON g.materia_id = m.id
+                JOIN maestro ma ON g.maestro_id = ma.id
+                JOIN usuario u ON ma.usuario_id = u.id
                 WHERE g.id = ?
                 """;
         try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() ? Optional.of(mapear(rs)) : Optional.empty();
+                if (rs.next()) {
+                    return Optional.of(mapear(rs));
+                }
             }
         }
+        return Optional.empty();
     }
 
     public Optional<Grupo> findByClave(String clave) throws SQLException {
@@ -74,6 +75,25 @@ public class GrupoDAO {
         try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, clave);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? Optional.of(mapear(rs)) : Optional.empty();
+            }
+        }
+    }
+
+    public Optional<Grupo> findByClaveYSemestre(String clave, String semestre) throws SQLException {
+        String sql = """
+                SELECT g.*, mat.nombre AS materia_nombre, u.nombre AS maestro_nombre
+                FROM grupo g
+                JOIN materia mat ON mat.id = g.materia_id
+                JOIN maestro m   ON m.id   = g.maestro_id
+                JOIN usuario u   ON u.id   = m.usuario_id
+                WHERE g.clave = ? AND g.semestre = ?
+                """;
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, clave);
+            ps.setString(2, semestre);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next() ? Optional.of(mapear(rs)) : Optional.empty();
             }
@@ -101,30 +121,25 @@ public class GrupoDAO {
     }
 
     public List<Grupo> findByMaestro(int maestroId) throws SQLException {
+        List<Grupo> grupos = new ArrayList<>();
+        // Ajustamos el SQL para incluir los nombres de las materias (Joins)
         String sql = """
-                SELECT g.*, 
-                       mat.nombre AS materia_nombre, 
-                       u.nombre AS maestro_nombre
+                SELECT g.*, m.nombre as materia_nombre 
                 FROM grupo g
-                JOIN materia mat ON g.materia_id = mat.id
-                JOIN maestro m ON g.maestro_id = m.id
-                JOIN usuario u ON m.usuario_id = u.id
-                WHERE g.maestro_id = ? AND g.activo = true
-                ORDER BY g.semestre DESC, g.clave ASC
+                JOIN materia m ON g.materia_id = m.id
+                WHERE g.maestro_id = ? AND g.estado_evaluacion = 'ABIERTO'
+                ORDER BY g.semestre DESC
                 """;
-        
-        List<Grupo> lista = new ArrayList<>();
         try (Connection conn = DatabaseManagerUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            
+            PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, maestroId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    lista.add(mapear(rs));
+                    grupos.add(mapear(rs));
                 }
             }
         }
-        return lista;
+        return grupos;
     }
 
     public List<Grupo> findByAlumno(int alumnoId) throws SQLException {

@@ -14,7 +14,7 @@
             
             <Button text="Importar CSV" onAction="#handleImportarCsv" styleClass="button-outlined" style="-fx-pref-height: 35;">
                 <tooltip>
-                    <Tooltip text="Formato esperado:&#10;• ID ALUMNO&#10;• ID GRUPO" />
+                    <Tooltip text="Formato esperado:&#10;• Matrícula del Alumno&#10;• Clave del Grupo&#10;• Semestre" />
                 </tooltip>
             </Button>
 

@@ -53,6 +53,7 @@ public class GrupoBonusController {
     @FXML private TextField campoPuntos;
     @FXML private TextField campoMotivo;
     @FXML private Label lblMensajeFormulario;
+    @FXML private Button btnGuardarPuntos;
 
     // === ESTADO ===
     private Grupo grupoActual;
@@ -266,6 +267,14 @@ public class GrupoBonusController {
     }
 
     private void prepararAsignacion(FilaAlumnoBonus fila) {
+        if (grupoActual.isCerrado()) {
+            btnGuardarPuntos.setDisable(true);
+            campoPuntos.setDisable(true);
+            campoMotivo.setDisable(true);
+            
+            mostrarMensaje("El acta de este grupo ha sido firmada. No se pueden otorgar más puntos extra.", false);
+        }
+        
         if (fila.getInscripcionId() == -1) {
             mostrarMensaje("Error: El alumno no tiene una inscripción válida.", true);
             return;
@@ -289,6 +298,11 @@ public class GrupoBonusController {
         String seleccionStr = comboTipoAplicacion.getValue();
         String puntosStr = campoPuntos.getText().trim();
         String motivo = campoMotivo.getText().trim();
+
+        if (grupoActual.isCerrado()) {
+            mostrarMensaje("Operación denegada: El grupo ya está cerrado.", true);
+            return;
+        }
 
         if (seleccionStr == null || puntosStr.isEmpty() || motivo.isEmpty()) {
             mostrarMensaje("Por favor, llena todos los campos.", true);
